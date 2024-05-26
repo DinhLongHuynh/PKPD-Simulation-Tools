@@ -79,7 +79,7 @@ with col2:
     
 C_limit = st.number_input("C Limit (mg/L)", value=None,format="%.3f")
 sampling_points = st.text_input("Sampling Points (h)", "0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24")
-sampling_points = [int(x) for x in sampling_points.split(",")]
+sampling_points = [float(x) for x in sampling_points.split(",")]
 logit = st.toggle("Log Transformation", value=False)
 
 if st.button("Run Simulation"):

@@ -57,7 +57,7 @@ with col2:
 n_patients = st.number_input("Number of Patients", value=1)
 E_limit = st.number_input("E Limit", value=None,format="%.3f")
 sampling_conc = st.text_input("Sampling Concentrations", "2, 4, 5, 6, 7, 8, 10, 20, 50, 100")
-sampling_conc = [int(x) for x in sampling_conc.split(",")]
+sampling_conc = [float(x) for x in sampling_conc.split(",")]
 
 if st.button("Run Simulation"):
     pd_simulation(Emax, EC50, Ebaseline, hill, n_patients, omegaEmax, omegaEC50, omegaEbaseline, omegahill, E_limit, sampling_conc)
