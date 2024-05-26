@@ -6,7 +6,8 @@ from scipy.stats import norm
 
 # Core code of the page
 def pk_simulation(dose=100, CL_pop=2, V_pop=50, ka_pop=None, F_pop=1, n_patients=1, omegaCL=0, omegaV=0, omegaka=0, omegaF=0, 
-                  C_limit=None, sampling_points=[0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24], logit=False):
+                  C_limit=None, sampling_points=24, logit=False):
+    sampling_points = np.linspace(0,sampling_points,1000)
     time = np.array(sampling_points).reshape(1, len(sampling_points))
     CV_V = norm.rvs(loc=0, scale=omegaV, size=n_patients)
     V_variability = V_pop * np.exp(CV_V)
@@ -78,8 +79,7 @@ with col2:
     omegaF = st.number_input("Omega F", value=0.00,format="%.3f")
     
 C_limit = st.number_input("C Limit (mg/L)", value=None,format="%.3f")
-sampling_points = st.text_input("Sampling Points (h)", "0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24")
-sampling_points = [float(x) for x in sampling_points.split(",")]
+sampling_points = st.number_input("Time range (h)", value=24)
 logit = st.toggle("Log Transformation", value=False)
 
 if st.button("Run Simulation"):
