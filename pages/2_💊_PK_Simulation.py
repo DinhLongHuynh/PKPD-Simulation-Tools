@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 from scipy.stats import norm
 
 # Core code of the page
-def pk_simulation(dose=100, CL_pop=2, V_pop=50, ka_pop=None, F_pop=1, n_patients=1, omegaCL=0, omegaV=0, omegaka=0, omegaF=0, 
+def pk_simulation(dose=100, CL_pop=2, V_pop=50, ka_pop=None, F_pop=1, n_patients=1, sig_resid = 0, omegaCL=0, omegaV=0, omegaka=0, omegaF=0, 
                   C_limit=None, sampling_points=24, logit=False):
     sampling_points = np.linspace(0,sampling_points,1000)
     time = np.array(sampling_points).reshape(1, len(sampling_points))
@@ -19,14 +19,17 @@ def pk_simulation(dose=100, CL_pop=2, V_pop=50, ka_pop=None, F_pop=1, n_patients
     F_variability = F_pop * np.exp(CV_F)
     F_var = F_variability.reshape(n_patients, 1)
     ke_var = CL_var / V_var
+    CV_resid = norm.rvs(loc=0, scale=sig_resid, size=n_patients)
+    resid_var = np.array(CV_resid).reshape(n_patients, 1)
+
 
     if ka_pop is None:
-        concentration = (dose * F_var / V_var) * np.exp(np.dot(-ke_var, time))
+        concentration = ((dose * F_var / V_var) * np.exp(np.dot(-ke_var, time)))+resid_var
     else:
         CV_ka = norm.rvs(loc=0, scale=omegaka, size=n_patients)
         ka_variability = ka_pop * np.exp(CV_ka)
         ka_var = ka_variability.reshape(n_patients, 1)
-        concentration = (dose * F_var * ka_var) / (V_var * (ka_var - ke_var)) * (np.exp(np.dot(-ke_var, time)) - np.exp(np.dot(-ka_var, time)))
+        concentration = ((dose * F_var * ka_var) / (V_var * (ka_var - ke_var)) * (np.exp(np.dot(-ke_var, time)) - np.exp(np.dot(-ka_var, time))))+resid_var
 
     df_C = pd.DataFrame(concentration, columns=sampling_points)
     df_C.replace([np.inf, -np.inf], np.nan, inplace=True)
@@ -61,7 +64,7 @@ It takes into account dose, ka, ke, F, V, and CL to characterize the PK profile.
     
 It can used for modelling both IV and oral drug.
     
-It also take the omega arguments as the unexplained interindividual variability.""")
+It also take the omega arguments as the standard deviation of the population distribution, represent unexplained interindividual variability.""")
 
 col1, col2 = st.columns(2)
 
@@ -77,10 +80,11 @@ with col2:
     omegaV = st.number_input("Omega V", value=0.00,format="%.3f")
     omegaka = st.number_input("Omega ka", value=0.00,format="%.3f")
     omegaF = st.number_input("Omega F", value=0.00,format="%.3f")
-    
+
+sig_resid = st.number_input("Sigma Residual", value=0.0,format="%.3f")
 C_limit = st.number_input("C Limit (mg/L)", value=None,format="%.3f")
 sampling_points = st.number_input("Time range (h)", value=24)
 logit = st.toggle("Log Transformation", value=False)
 
 if st.button("Run Simulation"):
-    pk_simulation(dose, CL_pop, V_pop, ka_pop, F_pop, n_patients, omegaCL, omegaV, omegaka, omegaF, C_limit, sampling_points, logit)
+    pk_simulation(dose, CL_pop, V_pop, ka_pop, F_pop, n_patients, sig_resid, omegaCL, omegaV, omegaka, omegaF, C_limit, sampling_points, logit)

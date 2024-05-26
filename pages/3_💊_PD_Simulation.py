@@ -6,19 +6,21 @@ from scipy.stats import norm
 
 
 # Core code 
-def pd_simulation(Emax=6.43, EC50=5.38, Ebaseline=1, hill=1, n_patients=1, omegaEmax=0, omegaEC50=0, omegaEbaseline=0, omegahill=0, 
+def pd_simulation(Emax=6.43, EC50=5.38, Ebaseline=1, hill=1, n_patients=1, sig_resid=0, omegaEmax=0, omegaEC50=0, omegaEbaseline=0, omegahill=0, 
                   E_limit=None, sampling_conc=100):
     Ebaseline_CV = norm.rvs(loc=0, scale=omegaEbaseline, size=n_patients)
     Emax_CV = norm.rvs(loc=0, scale=omegaEmax, size=n_patients)
     EC50_CV = norm.rvs(loc=0, scale=omegaEC50, size=n_patients)
     hill_CV = norm.rvs(loc=0, scale=omegahill, size=n_patients)
+    resid_CV = norm.rvs(loc=0, scale=sig_resid, size=n_patients)
     Ebaseline_var = (Ebaseline * np.exp(Ebaseline_CV)).reshape(n_patients, 1)
     Emax_var = (Emax * np.exp(Emax_CV)).reshape(n_patients, 1)
     EC50_var = (EC50 * np.exp(EC50_CV)).reshape(n_patients, 1)
     hill_var = (hill * np.exp(hill_CV)).reshape(n_patients, 1)
+    resid_var = np.array(resid_CV).reshape(n_patients,1)
     sampling_conc = np.linspace(0,sampling_conc,1000)
     conc_list = np.array(sampling_conc).reshape(1, len(sampling_conc))
-    E_array = Ebaseline_var + Emax_var * (conc_list ** hill_var) / (EC50_var + conc_list)
+    E_array = (Ebaseline_var + Emax_var * (conc_list ** hill_var) / (EC50_var + conc_list))+resid_var
     E_df = pd.DataFrame(E_array, columns=sampling_conc)
     
     fig = go.Figure()
@@ -42,7 +44,7 @@ It takes into account Emax, EC50, Ebaseline, and hill to characterize the PD pro
 
 The hill can be set to 1 to obtain the Emax model.
    
-It also take the omega arguments as the unexplained interindividual variability.""")
+It also take the omega arguments as the standard deviation of population distribution, represent unexplained interindividual variability.""")
 
 col1, col2 = st.columns(2)
 with col1: 
@@ -55,9 +57,11 @@ with col2:
     omegaEC50 = st.number_input("Omega EC50", value=0.00,format="%.3f")
     omegaEbaseline = st.number_input("Omega Ebaseline", value=0.00,format="%.3f")
     omegahill = st.number_input("Omega Hill", value=0.00,format="%.3f")
+
+sig_resid = st.number_input("Sigma Residual", value=0.00,format="%.3f" )
 n_patients = st.number_input("Number of Patients", value=1)
 E_limit = st.number_input("E Limit", value=None,format="%.3f")
 sampling_conc = st.number_input("Concentrations Range", value=100)
 
 if st.button("Run Simulation"):
-    pd_simulation(Emax, EC50, Ebaseline, hill, n_patients, omegaEmax, omegaEC50, omegaEbaseline, omegahill, E_limit, sampling_conc)
+    pd_simulation(Emax, EC50, Ebaseline, hill, n_patients,sig_resid, omegaEmax, omegaEC50, omegaEbaseline, omegahill, E_limit, sampling_conc)

@@ -48,13 +48,13 @@ st.set_page_config(page_title='Combined Dose Regimen PK', page_icon='💊', layo
 st.title("PK Simulation of Combined Dosing Regimen IV and IM/Oral Drugs")
 st.write("""This page helps to visualize the PK profile of the combined dosing regimen between:
              
-- Prolonged infusion iv drugs: characterized by dose_iv and the infusion duration
+- Prolonged infusion iv drugs: characterized by Dose IV and the Infusion Duration.
              
-- IM or oral drugs: charaterized by dose_im, start_im, and interval_dose_im
+- IM or oral drugs: charaterized by Dose IM, Start IM, and Interval Dose IM.
              
     
 Besides, the simulation also takes into account the PK parameters of the drugs, including CL, Vd, ke, ka, and F.
-The time range of the simulation can be selected through time_range.""")
+The time range of the simulation can be selected through Simulation Range.""")
     
 col1, col2 = st.columns(2)
     
