@@ -7,7 +7,7 @@ from scipy.stats import norm
 
 # Core code 
 def pd_simulation(Emax=6.43, EC50=5.38, Ebaseline=1, hill=1, n_patients=1, omegaEmax=0, omegaEC50=0, omegaEbaseline=0, omegahill=0, 
-                  E_limit=None, sampling_conc=[2, 4, 5, 6, 7, 8, 10, 20, 50, 100]):
+                  E_limit=None, sampling_conc=100):
     Ebaseline_CV = norm.rvs(loc=0, scale=omegaEbaseline, size=n_patients)
     Emax_CV = norm.rvs(loc=0, scale=omegaEmax, size=n_patients)
     EC50_CV = norm.rvs(loc=0, scale=omegaEC50, size=n_patients)
@@ -16,6 +16,7 @@ def pd_simulation(Emax=6.43, EC50=5.38, Ebaseline=1, hill=1, n_patients=1, omega
     Emax_var = (Emax * np.exp(Emax_CV)).reshape(n_patients, 1)
     EC50_var = (EC50 * np.exp(EC50_CV)).reshape(n_patients, 1)
     hill_var = (hill * np.exp(hill_CV)).reshape(n_patients, 1)
+    sampling_conc = np.linspace(0,sampling_conc,1000)
     conc_list = np.array(sampling_conc).reshape(1, len(sampling_conc))
     E_array = Ebaseline_var + Emax_var * (conc_list ** hill_var) / (EC50_var + conc_list)
     E_df = pd.DataFrame(E_array, columns=sampling_conc)
@@ -56,8 +57,7 @@ with col2:
     omegahill = st.number_input("Omega Hill", value=0.00,format="%.3f")
 n_patients = st.number_input("Number of Patients", value=1)
 E_limit = st.number_input("E Limit", value=None,format="%.3f")
-sampling_conc = st.text_input("Sampling Concentrations", "2, 4, 5, 6, 7, 8, 10, 20, 50, 100")
-sampling_conc = [float(x) for x in sampling_conc.split(",")]
+sampling_conc = st.number_input("Concentrations Range", value=100)
 
 if st.button("Run Simulation"):
     pd_simulation(Emax, EC50, Ebaseline, hill, n_patients, omegaEmax, omegaEC50, omegaEbaseline, omegahill, E_limit, sampling_conc)
