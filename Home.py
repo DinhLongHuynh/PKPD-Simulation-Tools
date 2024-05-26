@@ -10,11 +10,11 @@ st.set_page_config(page_title='PKPD Simulation Tools', page_icon='💊', layout=
 st.sidebar.title('HOME')
 st.title('PKPD Simulation Tools')
 st.caption('Version 1.0.1')
-st.write("""PKPD Simulation Tools 1.0.0 is the web application developed by Dinh Long Huynh, a current Master's Student at Uppsala University, Sweden
+st.write("""PKPD Simulation Tools 1.0.1 is the web application developed by Dinh Long Huynh, a current Master's Student at Uppsala University, Sweden
 
 This application helps students and researchers to simulate different scenarios in clinical trials, using the pharmacokinetic one-compartment model.
          
-With the 2.0.0 version, which is an ongoing development, the application will be updated with more features with different compartment models, aiming to accurately simulate clinical scenarios. """)
+With the 1.1.0 version, which is an ongoing development, the application will be updated with more features with different compartment models, aiming to accurately simulate clinical scenarios. """)
 
 st.sidebar.success('Select a page above')
 
