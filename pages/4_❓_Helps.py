@@ -17,7 +17,6 @@ st.write('- **Start point IM (h):** The data type is **integer**. This is the ti
 st.write('- **Interval Dose IM (h):** The data type is a **list of integer**. The values are the relative time points when you want to inject the i.m. drug. Because time points are relative, the first i.m. dose always starts at 0 hour. For example, if you want to inject triple dose a day of an i.m drug, the input should be: 0,8,16 hour.')
 st.write('- **Clearance (L/h):** The data type is **float**. This is the clearance.')
 st.write('- **Volume of Distribution (L):** The data type is **float**. This is the Volume of Distribution.')
-st.write('- **Elimination Constant (h-1):** The data type is **float**. This is the elimination rate constant, or ke.')
 st.write('- **Absorption Constant (h-1):** The data type is **float**. This is the absorption rate constant, or ka.')
 st.write('- **Bioavailability:** The data type is **float**. This is the total bioavailability of drugs in the scale from 0 to 1. For example, if the bioavailability is 85%, the input value should be 0.85.')
 st.write('- **Simulation Range (h):** The data type is **integer**. This is the endpoint of the time range on the simulation plot. For example, if you input 100, the plot will show the simulation within the range between 0 and 100 hour.')

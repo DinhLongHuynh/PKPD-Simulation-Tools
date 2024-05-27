@@ -60,6 +60,7 @@ The time range of the simulation can be selected through Simulation Range.""")
 col1, col2 = st.columns(2)
     
 with col1:
+    st.subheader('Dosing Regimen')
     dose_iv = st.number_input("Dose IV (mg)", value=500.0,format="%.3f")
     infusion_duration = st.number_input("Infusion Duration (h)", value=24)
     dose_im = st.number_input("Dose IM (mg)", value=1300.0,format="%.3f")
@@ -67,6 +68,7 @@ with col1:
     interval_dose_im = st.text_input("Interval Dose IM (h)", "0, 24, 48, 72, 96, 120")
     interval_dose_im = [int(x) for x in interval_dose_im.split(",")]
 with col2:
+    st.subheader('PK Parameters')
     CL = st.number_input("Clearance (L/h)", value=9.00,format="%.2f")
     Vd = st.number_input("Volume of Distribution (L)", value=50.00,format="%.2f")
     ka = st.number_input("Absorption Constant (h-1)", value=0.020,format="%.3f")
@@ -74,7 +76,7 @@ with col2:
     time_range = st.number_input("Simulation Range (h)", value=200)
     
 
-
+st.subheader('Display Option')
 col4, col5, col6 = st.columns(3)
 with col4:
     IM_profile = st.toggle("Show IM Profile", value=False)
