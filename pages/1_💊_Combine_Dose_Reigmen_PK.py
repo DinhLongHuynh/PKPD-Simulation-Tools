@@ -7,9 +7,10 @@ from scipy.stats import norm
 # Define functions for simulation
 
 def pk_combine_dose_regimen(dose_iv=500, infusion_duration=24, dose_im=1300, start_im=24, interval_dose_im=[0, 24, 48, 72, 96, 120], 
-                            CL=7.5, Vd=33, ke=0.228, ka=0.028, F=1, time_range=170, IM_profile=False, IV_profile=False, combine_profile=True):
+                            CL=7.5, Vd=33, ka=0.028, F=1, time_range=170, IM_profile=False, IV_profile=False, combine_profile=True):
     ko = dose_iv / infusion_duration
     dose_im_F = dose_im * F
+    ke = CL/Vd
 
     time_points_mutual = np.arange(0, time_range, 1)
     time_point_infusion = time_points_mutual[0:(round(infusion_duration) + 1)]
@@ -68,11 +69,11 @@ with col1:
 with col2:
     CL = st.number_input("Clearance (L/h)", value=9.00,format="%.2f")
     Vd = st.number_input("Volume of Distribution (L)", value=50.00,format="%.2f")
-    ke = st.number_input("Elimination Constant (h-1)", value=0.200,format="%.3f")
     ka = st.number_input("Absorption Constant (h-1)", value=0.020,format="%.3f")
     F = st.number_input("Bioavailability", value=1.00)
+    time_range = st.number_input("Simulation Range (h)", value=200)
     
-time_range = st.number_input("Simulation Range (h)", value=200)
+
 
 col4, col5, col6 = st.columns(3)
 with col4:
@@ -83,7 +84,7 @@ with col6:
     combine_profile = st.toggle("Show Combined Profile", value=True)
 
 if st.button("Run Simulation"):
-    pk_combine_dose_regimen(dose_iv, infusion_duration, dose_im, start_im, interval_dose_im, CL, Vd, ke, ka, F, time_range, IM_profile, IV_profile, combine_profile)
+    pk_combine_dose_regimen(dose_iv, infusion_duration, dose_im, start_im, interval_dose_im, CL, Vd, ka, F, time_range, IM_profile, IV_profile, combine_profile)
 
 
 
