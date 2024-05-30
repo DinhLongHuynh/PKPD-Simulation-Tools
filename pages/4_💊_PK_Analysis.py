@@ -193,7 +193,7 @@ with visualization:
 
 
 with non_compartment: 
-    st.error('The page is still on progress')
+    st.error('The page is still in progress')
     st.header('Coming Soon')
 
 
@@ -201,5 +201,5 @@ with non_compartment:
 
 
 with one_compartment:
-    st.error('The page is still on progress')
+    st.error('The page is still in progress')
     st.header('Coming Soon')
