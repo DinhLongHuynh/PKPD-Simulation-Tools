@@ -37,7 +37,7 @@ def pd_simulation(Emax=6.43, EC50=5.38, Ebaseline=1, hill=1, n_patients=1, sig_r
 
 # Page setup 
 st.set_page_config(page_title='Variability PD Tools', page_icon='💊', layout="wide", initial_sidebar_state="auto", menu_items=None)
-st.title("PD Simulation")
+st.title("💊 PD Simulation")
 st.write("""This page helps to visualize the PD profile of drug, using Emax_hill model.
 
 It takes into account Emax, EC50, Ebaseline, and hill to characterize the PD profile. 

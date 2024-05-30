@@ -46,7 +46,7 @@ def pk_combine_dose_regimen(dose_iv=500, infusion_duration=24, dose_im=1300, sta
 
 # Pages setup 
 st.set_page_config(page_title='Combined Dose Regimen PK', page_icon='💊', layout="wide", initial_sidebar_state="auto", menu_items=None)
-st.title("PK Simulation of Combined Dosing Regimen IV and IM/Oral Drugs")
+st.title("💊 PK Simulation of Combined Dosing Regimen IV and IM/Oral Drugs")
 st.write("""This page helps to visualize the PK profile of the combined dosing regimen between:
              
 - Prolonged infusion iv drugs: characterized by Dose IV and the Infusion Duration.

@@ -57,7 +57,7 @@ def pk_simulation(dose=100, CL_pop=2, V_pop=50, ka_pop=None, F_pop=1, n_patients
 
 #Page Set up
 st.set_page_config(page_title='Variability PK Tools', page_icon='💊', layout="wide", initial_sidebar_state="auto", menu_items=None)
-st.title("PK Simulation")
+st.title("💊 PK Simulation")
 st.write("""This page helps to visualize the PK profile of drug, using one compartment model.
     
 It takes into account dose, ka, ke, F, V, and CL to characterize the PK profile. 
