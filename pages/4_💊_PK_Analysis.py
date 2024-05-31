@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
+from thefuzz import process
 
 st.set_page_config(page_title='PK Analysis', page_icon='💊', layout="wide", initial_sidebar_state="auto", menu_items=None)
 st.title("💊 PK Analysis Tools")
@@ -33,15 +34,29 @@ with file_characteristic:
     if df is not None:
         st.subheader("File Characteristic")
         st.caption('Select the column in your file that corresponding to these descriptions')
+
+
+        # Use the similarity check to pre-assign columns
+        default_id_col = process.extract('ID',df.columns,limit=1)[0][0]
+        default_time_col = process.extract('Time',df.columns,limit=1)[0][0]
+        default_conc_col = process.extract('Concentration',df.columns,limit=1)[0][0]
+        default_dose_col = process.extract('Dose',df.columns,limit=1)[0][0]
+        
+        default_id_index = df.columns.get_loc(default_id_col)
+        default_time_index = df.columns.get_loc(default_time_col)
+        default_conc_index = df.columns.get_loc(default_conc_col)
+        default_dose_index = df.columns.get_loc(default_dose_col)
+
+
        
         # Let user define the columns
         col1, col2 = st.columns(2)
         with col1: 
             st.write('Fundamental Information')
-            ID_col = st.selectbox('Select a column that represent ID',df.columns)
-            Time_col = st.selectbox('Select a column that represent Time',df.columns)
-            Concentration_col = st.selectbox('Select a column that represent Concentration',df.columns)
-            Dose_col = st.selectbox('Select a column that represent Dose',df.columns)
+            ID_col = st.selectbox('Select a column that represent ID',df.columns,index = default_id_index)
+            Time_col = st.selectbox('Select a column that represent Time',df.columns,index = default_time_index)
+            Concentration_col = st.selectbox('Select a column that represent Concentration',df.columns, index = default_conc_index)
+            Dose_col = st.selectbox('Select a column that represent Dose',df.columns,index = default_dose_index)
         with col2: 
             st.write('Additional Information')
             Age_col = st.selectbox('Select a column that represent Age',df.columns,index=None)
