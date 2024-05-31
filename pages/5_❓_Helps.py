@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 st.set_page_config(page_title='Helps', page_icon='❓', layout="wide", initial_sidebar_state="auto", menu_items=None)
-st.title('Helps')
+st.title('❓ Helps')
 st.write('''This page contains further interpretation of the parameters and variables using in the different simulation applications.
          
 The application provides the common standard units used in clinical trial, i.e. hour for time, mg for dose, mg/L for concentration.
