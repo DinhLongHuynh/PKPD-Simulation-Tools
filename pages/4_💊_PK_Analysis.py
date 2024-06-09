@@ -6,8 +6,6 @@ import plotly.express as px
 from thefuzz import process
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 st.set_page_config(page_title='PK Analysis', page_icon='💊', layout="wide", initial_sidebar_state="auto", menu_items=None)
 st.title("💊 PK Analysis Tools")
