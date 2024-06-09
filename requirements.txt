@@ -1,7 +1,6 @@
-
 numpy
 pandas
 plotly
 scipy
 thefuzz
-sklearn
+scikit-learn
