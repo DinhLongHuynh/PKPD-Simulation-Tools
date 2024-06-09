@@ -4,3 +4,4 @@ pandas
 plotly
 scipy
 thefuzz
+sklearn
