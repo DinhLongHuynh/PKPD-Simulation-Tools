@@ -4,3 +4,4 @@ plotly
 scipy
 thefuzz
 scikit-learn
+statsmodels
