@@ -5,3 +5,4 @@ scipy
 thefuzz
 scikit-learn
 statsmodels
+scipy
