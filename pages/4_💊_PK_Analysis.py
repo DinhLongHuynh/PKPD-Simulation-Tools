@@ -211,8 +211,6 @@ with visualization:
 
 
 with non_compartment:
-    covariate_df = edited_extract_df.drop(['Time','Conc','Dose'],axis = 1).drop_duplicates(subset='ID')
-
     def non_compartmental_analysis(df):
         # Initialize dataframe
         data = {
@@ -324,6 +322,7 @@ with non_compartment:
         
         non_compartment_df = non_compartmental_analysis(edited_extract_df)
         if not non_compartment_df.empty:
+            covariate_df = edited_extract_df.drop(['Time','Conc','Dose'],axis = 1).drop_duplicates(subset='ID')
             analysis_covariate_df = non_compartment_df.merge(covariate_df, on = 'ID')
             non_compartment_df_final = st.data_editor(analysis_covariate_df, num_rows="dynamic")
             
@@ -357,7 +356,7 @@ with non_compartment:
 
 
 with one_compartment:
-    covariate_df = edited_extract_df.drop(['Time','Conc','Dose'],axis = 1).drop_duplicates(subset='ID')
+    
     
     def iv_analysis_function(df):
         iv_analysis_results = {'ID': [],
@@ -489,6 +488,7 @@ with one_compartment:
             iv_analysis_final = iv_analysis_function(edited_extract_df)
             
             if not iv_analysis_final.empty:
+                covariate_df = edited_extract_df.drop(['Time','Conc','Dose'],axis = 1).drop_duplicates(subset='ID')
                 iv_analysis_covariate_df = iv_analysis_final.merge(covariate_df, on = 'ID')
                 iv_analysis_covariate_final = st.data_editor(iv_analysis_covariate_df, num_rows="dynamic")
             else:
@@ -516,6 +516,7 @@ with one_compartment:
                 im_analysis_final = im_analysis_function(df=edited_extract_df, predefined_F=predefined_F, initial_ka=initial_ka, initial_ke=initial_ke, initial_Vd=initial_Vd)
 
                 if not im_analysis_final.empty:
+                    covariate_df = edited_extract_df.drop(['Time','Conc','Dose'],axis = 1).drop_duplicates(subset='ID')
                     im_analysis_covariate_df = im_analysis_final.merge(covariate_df, on = 'ID')
                     im_analysis_covariate_final = st.data_editor(im_analysis_covariate_df, num_rows="dynamic")
                 else:
