@@ -5,7 +5,9 @@ import plotly.graph_objects as go
 import plotly.express as px
 from thefuzz import process
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import r2_score
+from sklearn.metrics import r2_score, mean_squared_error
+from scipy.optimize import curve_fit
+from scipy.integrate import quad
 
 st.set_page_config(page_title='PK Analysis', page_icon='💊', layout="wide", initial_sidebar_state="auto", menu_items=None)
 st.title("💊 PK Analysis Tools")
@@ -209,7 +211,8 @@ with visualization:
 
 
 with non_compartment:
-    
+    covariate_df = edited_extract_df.drop(['Time','Conc','Dose'],axis = 1).drop_duplicates(subset='ID')
+
     def non_compartmental_analysis(df):
         # Initialize dataframe
         data = {
@@ -251,7 +254,7 @@ with non_compartment:
                     prediction = model.predict(X_points)
                     r2 = r2_score(y_true=Y_points, y_pred=prediction)
                     r2_list.append(r2)
-                    slope_list.append(model.coef_[0][0])
+                    slope_list.append(model.coef_.item())
 
             # Skip if r2_list is empty
                 if not r2_list:
@@ -321,7 +324,6 @@ with non_compartment:
         
         non_compartment_df = non_compartmental_analysis(edited_extract_df)
         if not non_compartment_df.empty:
-            covariate_df = edited_extract_df.drop(['Time','Conc','Dose'],axis = 1).drop_duplicates(subset='ID')
             analysis_covariate_df = non_compartment_df.merge(covariate_df, on = 'ID')
             non_compartment_df_final = st.data_editor(analysis_covariate_df, num_rows="dynamic")
             
@@ -355,5 +357,173 @@ with non_compartment:
 
 
 with one_compartment:
-    st.title('One-Compartmental Analysis')
+    covariate_df = edited_extract_df.drop(['Time','Conc','Dose'],axis = 1).drop_duplicates(subset='ID')
+    
+    def iv_analysis_function(df):
+        iv_analysis_results = {'ID': [],
+                               'Dose':[],
+                               'C0': [],
+                               'ke':[],
+                               'R2':[],
+                               'RMSE':[],
+                               'AUC_0-inf':[],
+                               'Half life': [],
+                               'Apparent CL':[],
+                               'Apparent Vd':[]}
+
+        for id in df['ID'].unique():
+            df_id = df[df['ID']==id].dropna()
+            
+            if df_id.shape[0] < 3:
+                st.error(f'ID "{id}" has less than 3 data points. Double check the input data')
+                continue 
+            
+            else:
+                Y = np.log(df_id['Conc']+0.00001).values.reshape(-1, 1)
+                X = df_id['Time'].values.reshape(-1, 1)
+                model = LinearRegression()
+                model.fit(X,Y)
+                prediction = model.predict(X)
+
+                # Store the primary data
+                iv_analysis_results['ID'].append(id)
+                iv_analysis_results['R2'].append(r2_score(y_true=Y, y_pred=prediction))
+                iv_analysis_results['RMSE'].append(mean_squared_error(y_true=Y, y_pred=prediction, squared=False))
+                iv_analysis_results['ke'].append(-model.coef_.item())
+                iv_analysis_results['C0'].append(np.exp(model.intercept_.item()))
+                iv_analysis_results['Dose'].append(df_id['Dose'].unique()[0])
+                iv_analysis_results['Apparent Vd'].append(df_id['Dose'].unique()[0]/np.exp(model.intercept_.item()))
+                iv_analysis_results['Apparent CL'].append(-model.coef_.item()*df_id['Dose'].unique()[0]/np.exp(model.intercept_.item()))
+                iv_analysis_results['AUC_0-inf'].append(np.exp(model.intercept_.item())/-model.coef_.item())
+                iv_analysis_results['Half life'].append(np.exp(2)/-model.coef_.item())
+
+                
+        
+        iv_analysis_df = pd.DataFrame(iv_analysis_results)
+        
+        return iv_analysis_df
+
+    def im_analysis_function(df, predefined_F, initial_ka, initial_ke, initial_Vd):
+        im_analysis_results = {'ID': [],
+                               'Dose':[],
+                               'ka': [],
+                               'ke':[],
+                               'Vd':[],
+                               'RMSE':[],
+                               'Tmax':[],
+                               'Cmax': [],
+                               'Half life':[],
+                               'AUC_0-inf':[],
+                               'Clearance':[]}
+
+        for id in df['ID'].unique():
+            df_id = df[df['ID']==id].dropna()
+            
+            if df_id.shape[0] < 3:
+                st.error(f'ID "{id}" has less than 3 data points. Double check the input data')
+                continue 
+            
+            else:
+                def model(t, ka, ke, V):
+                    F = predefined_F
+                    Dose = df_id['Dose'].unique()[0]
+                    return (F * Dose * ka / (V * (ka - ke))) * (np.exp(-ke * t) - np.exp(-ka * t))
+
+                initial_guesses = [initial_ka, initial_ke, initial_Vd]
+                Y = df_id['Conc'].values
+                X = df_id['Time'].values
+                params, _ = curve_fit(model, X, Y, p0=initial_guesses)
+                ka_est, ke_est, V_est = params
+                
+                prediction = model(X, ka_est, ke_est, V_est)
+                RMSE = mean_squared_error(Y,prediction, squared=False)
+
+                integral, _ = quad(model, 0, np.inf, args=(ka_est, ke_est, V_est))
+
+                # Store the primary data
+                im_analysis_results['ID'].append(id)
+                im_analysis_results['Dose'].append(df_id['Dose'].unique()[0])
+                im_analysis_results['ka'].append(ka_est)
+                im_analysis_results['ke'].append(ke_est)
+                im_analysis_results['Vd'].append(V_est)
+                im_analysis_results['RMSE'].append(RMSE)
+                im_analysis_results['Tmax'].append(np.log(ke_est/ka_est)/(ke_est-ka_est))
+                im_analysis_results['Cmax'].append(model(t =np.log(ke_est/ka_est)/(ke_est-ka_est),ka=ka_est,ke=ke_est,V=V_est))
+                im_analysis_results['AUC_0-inf'].append(integral)
+                im_analysis_results['Clearance'].append(df_id['Dose'].unique()[0]/integral)
+
+                # Elimination limited rate 
+                if ka_est > ke_est:
+                    im_analysis_results['Half life'].append(np.log(2)/ke_est)
+                elif ka_est < ke_est:
+                    im_analysis_results['Half life'].append(np.log(2)/ka_est)
+
+
+                
+        
+        im_analysis_df = pd.DataFrame(im_analysis_results)
+        
+        return im_analysis_df
+
+        
+
+
+
+    st.header('One-Compartmental Analysis')
     st.write('write some introduction here')
+
+    if edited_extract_df is not None:
+
+        st.subheader('Classify your drug')
+        col1, col2 = st.columns(2)
+        with col1:
+            iv_analysis = st.toggle('IV Drug Analysis')
+            st.caption('The drug with the immidiate absorption.')
+        with col2:
+            im_analysis = st.toggle('Non-IV Drug Analysis')
+            st.caption('The drug with the relative ka and ke or ka much smaller than ke, which makes absoprtion become significant.')
+
+
+        if iv_analysis:
+            st.subheader("IV Drug Analysis")
+            iv_analysis_final = iv_analysis_function(edited_extract_df)
+            
+            if not iv_analysis_final.empty:
+                iv_analysis_covariate_df = iv_analysis_final.merge(covariate_df, on = 'ID')
+                iv_analysis_covariate_final = st.data_editor(iv_analysis_covariate_df, num_rows="dynamic")
+            else:
+                st.info('For non-compartmental analysis, there should be at least 3 data points for each individuals. Double check your input data.')
+
+        st.write('\n')
+
+    
+        if im_analysis:
+            st.subheader("Non-IV Drug Analysis")
+            st.caption("Each patient needs at least 3 data points for non-iv drug analysis to fit the non-linear model with 3 parameters, including ka, ke and Vd. However, to obtain the reliable results, each patient should have 30 data points.")
+            st.caption('The non-linear model fitting requires the initial guesses of the parameters. These information can be included in your previous study. If your guesses are too far from the real value, try another value.')
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                predefined_F = st.number_input("Bioavailability:",value = 1.00,format="%.3f")
+                initial_Vd = st.number_input('Initial guess of Volume of Distribution:',value=0.001,format="%.3f")
+            with col2:
+                initial_ke = st.number_input('Initial guess of ke:',value=0.001,format="%.3f")
+                initial_ka = st.number_input('Initial guess of ka:',value=0.002,format="%.3f")
+            
+            start =  st.button('Run Analysis')
+
+            if start: 
+                im_analysis_final = im_analysis_function(df=edited_extract_df, predefined_F=predefined_F, initial_ka=initial_ka, initial_ke=initial_ke, initial_Vd=initial_Vd)
+
+                if not im_analysis_final.empty:
+                    im_analysis_covariate_df = im_analysis_final.merge(covariate_df, on = 'ID')
+                    im_analysis_covariate_final = st.data_editor(im_analysis_covariate_df, num_rows="dynamic")
+                else:
+                    st.info('For non-compartmental analysis, there should be at least 3 data points for each individuals. Double check your input data.')
+
+
+                
+
+    
+    else:
+        st.info('You should upload the file first')
