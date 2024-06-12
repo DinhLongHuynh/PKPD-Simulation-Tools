@@ -336,7 +336,7 @@ with non_compartment:
         
         # Print warning with the unqualified ID
         if len(unqualified_id) > 0:
-            st.error(f'ID {', '.join(str(id) for id in unqualified_id)} have less than 3 data points, which is insufficient for fitting the model. Double check your data.')
+            st.error(f'ID {", ".join(str(id) for id in unqualified_id)} have less than 3 data points, which is insufficient for fitting the model. Double check your data.')
 
         # Add covariates to the final results dataframe
         if not non_compartment_df.empty:
@@ -513,7 +513,7 @@ with one_compartment:
             
             # Print warning for unqualified id
             if len(unqualified_id) > 0:
-                st.error(f'ID {', '.join(str(id) for id in unqualified_id)} have less than 3 data points, which is insufficient for fitting the model. Double check your data.')
+                st.error(f'ID {", ".join(str(id) for id in unqualified_id)} have less than 3 data points, which is insufficient for fitting the model. Double check your data.')
 
             # Add the covariates to the dataframe
             if not iv_analysis_final.empty:
@@ -548,7 +548,7 @@ with one_compartment:
                 
                 # Print warning for unqualified id
                 if len(unqualified_id) > 0:
-                    st.error(f'ID {', '.join(str(id) for id in unqualified_id)} have less than 3 data points, which is insufficient for fitting the model. Double check your data.')
+                    st.error(f'ID {", ".join(str(id) for id in unqualified_id)} have less than 3 data points, which is insufficient for fitting the model. Double check your data.')
 
                 # Add the covariates to the dataframe
                 if not im_analysis_final.empty:
