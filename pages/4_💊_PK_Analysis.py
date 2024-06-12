@@ -415,7 +415,7 @@ with one_compartment:
                 iv_analysis_results['Apparent Vd'].append(df_id['Dose'].unique()[0]/np.exp(model.intercept_.item()))
                 iv_analysis_results['Apparent CL'].append(-model.coef_.item()*df_id['Dose'].unique()[0]/np.exp(model.intercept_.item()))
                 iv_analysis_results['AUC_0-inf'].append(np.exp(model.intercept_.item())/-model.coef_.item())
-                iv_analysis_results['Half life'].append(np.exp(2)/-model.coef_.item())
+                iv_analysis_results['Half life'].append(np.log(2)/-model.coef_.item())
 
                 
         
