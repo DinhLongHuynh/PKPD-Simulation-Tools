@@ -1,3 +1,4 @@
+# Import modules/packages
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -5,7 +6,7 @@ import plotly.graph_objects as go
 from scipy.stats import norm
 
 
-# Core code 
+# Define function for the simulation
 def pd_simulation(Emax=6.43, EC50=5.38, Ebaseline=1, hill=1, n_patients=1, sig_resid=0, omegaEmax=0, omegaEC50=0, omegaEbaseline=0, omegahill=0, 
                   E_limit=None, sampling_conc=100):
     Ebaseline_CV = norm.rvs(loc=0, scale=omegaEbaseline, size=n_patients)
@@ -38,18 +39,19 @@ def pd_simulation(Emax=6.43, EC50=5.38, Ebaseline=1, hill=1, n_patients=1, sig_r
 # Page setup 
 st.set_page_config(page_title='Variability PD Tools', page_icon='💊', layout="wide", initial_sidebar_state="auto", menu_items=None)
 st.title("💊 PD Simulation")
-st.write("""This page helps to visualize the PD profile of drug, using Emax_hill model.
+st.write("""This page helps to visualize the PD profile of the drug, using the Emax-hill model.
 
-It takes into account Emax, EC50, Ebaseline, and hill to characterize the PD profile. 
+It takes into account Emax, EC50, Ebaseline, and Hill to characterize the PD profile. 
 
 The hill can be set to 1 to obtain the Emax model.
    
-It also take the omega arguments as the standard deviation of population distribution, represent unexplained interindividual variability.""")
+It also takes the omega arguments as the standard deviation of population distribution, representing unexplained interindividual variability.""")
 
+# Take the information of PD profile 
 col1, col2 = st.columns(2)
 with col1: 
-    Emax = st.number_input("Population Emax", value=6.43,format="%.3f")
-    EC50 = st.number_input("Population EC50", value=5.38,format="%.3f")
+    Emax = st.number_input("Population Emax", value=6.00,format="%.3f")
+    EC50 = st.number_input("Population EC50", value=5.00,format="%.3f")
     Ebaseline = st.number_input("Population Ebaseline", value=1.00,format="%.3f")
     hill = st.number_input("Population Hill Coefficient", value=1.00,format="%.3f")
 with col2:
@@ -63,5 +65,6 @@ n_patients = st.number_input("Number of Patients", value=1)
 E_limit = st.number_input("E Limit", value=None,format="%.3f")
 sampling_conc = st.number_input("Concentrations Range", value=100)
 
+# Simulate the PD profile 
 if st.button("Run Simulation"):
     pd_simulation(Emax, EC50, Ebaseline, hill, n_patients,sig_resid, omegaEmax, omegaEC50, omegaEbaseline, omegahill, E_limit, sampling_conc)

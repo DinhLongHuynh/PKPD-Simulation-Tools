@@ -1,3 +1,4 @@
+# Import modules/packages
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -5,7 +6,6 @@ import plotly.graph_objects as go
 from scipy.stats import norm
 
 # Define functions for simulation
-
 def pk_combine_dose_regimen(dose_iv=500, infusion_duration=24, dose_im=1300, start_im=24, interval_dose_im=[0, 24, 48, 72, 96, 120], 
                             CL=7.5, Vd=33, ka=0.028, F=1, time_range=170, IM_profile=False, IV_profile=False, combine_profile=True):
     ko = dose_iv / infusion_duration
@@ -44,21 +44,22 @@ def pk_combine_dose_regimen(dose_iv=500, infusion_duration=24, dose_im=1300, sta
     st.plotly_chart(fig)
 
 
-# Pages setup 
+# Page setup 
 st.set_page_config(page_title='Combined Dose Regimen PK', page_icon='💊', layout="wide", initial_sidebar_state="auto", menu_items=None)
 st.title("💊 PK Simulation of Combined Dosing Regimen IV and IM/Oral Drugs")
 st.write("""This page helps to visualize the PK profile of the combined dosing regimen between:
              
-- Prolonged infusion iv drugs: characterized by Dose IV and the Infusion Duration.
+- **Prolonged infusion IV drugs**: characterized by Dose IV and the Infusion Duration.
              
-- IM or oral drugs: charaterized by Dose IM, Start IM, and Interval Dose IM.
+- **IM or oral drugs**: characterized by Dose IM, Start IM, and Interval Dose IM.
              
     
-Besides, the simulation also takes into account the PK parameters of the drugs, including CL, Vd, ke, ka, and F.
-The time range of the simulation can be selected through Simulation Range.""")
+Besides, the simulation also takes into account the PK parameters of the drugs, including CL, Vd, ke, ka, and F. 
+The time range of the simulation can be selected through the Simulation Range.""")
     
 col1, col2 = st.columns(2)
-    
+
+# Take the information of PK profile    
 with col1:
     st.subheader('Dosing Regimen')
     dose_iv = st.number_input("Dose IV (mg)", value=500.0,format="%.3f")
@@ -75,7 +76,7 @@ with col2:
     F = st.number_input("Bioavailability", value=1.00)
     time_range = st.number_input("Simulation Range (h)", value=200)
     
-
+# Simulate the PK profile
 st.subheader('Display Option')
 col4, col5, col6 = st.columns(3)
 with col4:

@@ -1,10 +1,11 @@
+# Import modules/packages
 import streamlit as st
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from scipy.stats import norm
 
-# Core code of the page
+# Define function for the simulation
 def pk_simulation(dose=100, CL_pop=2, V_pop=50, ka_pop=None, F_pop=1, n_patients=1, sig_resid = 0, omegaCL=0, omegaV=0, omegaka=0, omegaF=0, 
                   C_limit=None, sampling_points=24, logit=False):
     sampling_points = np.linspace(0,sampling_points,1000)
@@ -55,19 +56,19 @@ def pk_simulation(dose=100, CL_pop=2, V_pop=50, ka_pop=None, F_pop=1, n_patients
     fig.update_layout(title='PK simulation')
     st.plotly_chart(fig)
 
-#Page Set up
+#Page setup
 st.set_page_config(page_title='Variability PK Tools', page_icon='💊', layout="wide", initial_sidebar_state="auto", menu_items=None)
 st.title("💊 PK Simulation")
-st.write("""This page helps to visualize the PK profile of drug, using one compartment model.
-    
-It takes into account dose, ka, ke, F, V, and CL to characterize the PK profile. 
-    
-It can used for modelling both IV and oral drug.
-    
-It also take the omega arguments as the standard deviation of the population distribution, represent unexplained interindividual variability.""")
+st.write("""This page helps to visualize the PK profile of the drug, using the one-compartment model.
 
+It takes into account dose, ka, ke, F, V, and CL to characterize the PK profile.
+
+It can used for modeling both IV and oral drugs.
+
+It also takes the omega arguments as the standard deviation of the population distribution, representing unexplained interindividual variability.""")
+
+# Take the information of PK profile 
 col1, col2 = st.columns(2)
-
 with col1:
     dose = st.number_input("Dose (mg)", value=100.0,format="%.3f")
     CL_pop = st.number_input("Population Clearance (L/h)", value=2.00,format="%.3f")
@@ -86,5 +87,6 @@ C_limit = st.number_input("C Limit (mg/L)", value=None,format="%.3f")
 sampling_points = st.number_input("Time range (h)", value=24)
 logit = st.toggle("Log Transformation", value=False)
 
+# Simulate the PK profile 
 if st.button("Run Simulation"):
     pk_simulation(dose, CL_pop, V_pop, ka_pop, F_pop, n_patients, sig_resid, omegaCL, omegaV, omegaka, omegaF, C_limit, sampling_points, logit)
