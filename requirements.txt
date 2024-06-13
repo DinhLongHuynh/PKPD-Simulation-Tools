@@ -6,4 +6,3 @@ thefuzz
 scikit-learn
 statsmodels
 scipy
-os
