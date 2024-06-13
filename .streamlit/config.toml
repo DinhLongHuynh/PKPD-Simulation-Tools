@@ -1,5 +1,8 @@
 [client]
-toolbarMode = "auto"
+toolbarMode = "viewer"
 
 [theme]
 base = 'dark'
+
+[sever]
+maxUploadSize = 1024
