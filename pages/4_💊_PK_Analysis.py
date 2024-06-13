@@ -9,61 +9,63 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score, mean_squared_error
 from scipy.optimize import curve_fit
 from scipy.integrate import quad
+import os
 
 # Page setup
 st.set_page_config(page_title='PK Analysis', page_icon='💊', layout="wide", initial_sidebar_state="auto", menu_items=None)
 st.title("💊 PK Analysis Tools")
 introduction, file_characteristic, visualization, non_compartment, one_compartment = st.tabs(["Introduction",'File Characteristic','Data Visualization',"Non-compartmental Analysis", "One-compartmental Analysis"])
 
-with introduction:
-    # Introduction
+
+
+with introduction:  
+# Introduction
     st.write(''' This page helps users to analyze the clinical trial data. There are two approaches to the analysis:
 
  - **Non-compartmental Analysis**: the analysis will be based on the discrete data points on the PK profile to conclude several PK parameters directly.
              
  - **One-compartmental Analysis**: the analysis will fit the observed data to the predefined model and then derive PK parameters from the model.''')
 
-    # File uploader
+# File uploader
     uploaded_file = st.file_uploader('Import your CSV dataset here')
-    st.caption('You can use these two demo data sets as application trial:')
+
+    st.caption('These two demo datasets could be used as application trial:')
     col1, col2 = st.columns(2)
 
-    # Initialize file to None
+# Initialize file to None
     file = None
+
+# Initialize df to None
+    if 'df' not in st.session_state:
+        st.session_state.df = None
+
     with col1:
         iv_drug_file = st.button('IV Drug Data')
     with col2:
         im_drug_file = st.button('IM Drug Data')
 
-    # Initialize df to None
-    if 'df' not in st.session_state:
-        st.session_state.df = None
-
-    # Handling button and imported file clicks
+    # Handling button clicks
     if uploaded_file is not None:
         file = uploaded_file
     elif iv_drug_file:
-        file = '../testdata/Phase_I_iv_drug.csv'
+        file = os.path.join('..', 'testdata', 'Phase_I_iv_drug.csv')
     elif im_drug_file:
-        file = '../testdata/Phase_I_im_drug.csv'
+        file = os.path.join('..', 'testdata', 'Phase_I_im_drug.csv')
 
-    # Read and store the data in session state
+# Read and store the data in session state
     if file is not None:
         st.session_state.df = pd.read_csv(file)
         st.success('File importing success')
         st.caption('Next step is characterising the data with File Characteristic tab.')
 
-
-
-
-
 with file_characteristic:
     if st.session_state.df is not None:
         df = st.session_state.df
+
         st.header("File Characteristic")
         st.caption('Select the column in your file that corresponds to these descriptions.')
 
-        # Use the similarity check to pre-assign mandatory columns
+    # Use the similarity check to pre-assign mandatory columns
         default_id_col = process.extract('ID', df.columns, limit=1)[0][0]
         default_time_col = process.extract('Time', df.columns, limit=1)[0][0]
         default_conc_col = process.extract('Conc', df.columns, limit=1)[0][0]
@@ -74,7 +76,7 @@ with file_characteristic:
         default_conc_index = df.columns.get_loc(default_conc_col)
         default_dose_index = df.columns.get_loc(default_dose_col)
 
-        # Let user define the columns
+    # Let user define the columns
         col1, col2 = st.columns(2)
         with col1:  # Use pre-assign columns as the default argument
             st.write('Compulsory Information')
@@ -89,7 +91,7 @@ with file_characteristic:
             Gender_col = st.selectbox('Select a column that represent Gender', df.columns, index=None)
             CLCR_col = st.selectbox('Select a column that represent Clearance Creatinine', df.columns, index=None)
 
-        # Define the extracted columns from df
+    # Define the extracted columns from df
         col_list = [ID_col, Time_col, Concentration_col, Dose_col, Age_col, Weight_col, Gender_col, CLCR_col]
         col_name = ['ID', 'Time', 'Conc', 'Dose', 'Age', 'Weight', 'Gender', 'CLCR']
         extracted_col = []
@@ -99,11 +101,11 @@ with file_characteristic:
                 extracted_col.append(column)
                 extracted_col_name.append(column_name)
 
-        # Extract df and unify the columns' names
+    # Extract df and unify the columns' names
         extract_df = df[extracted_col]
         extract_df.columns = extracted_col_name
 
-        # Allow the edit from user on the dataframe
+    # Allow the edit from user on the dataframe
         st.subheader('Data Frame')
         st.caption('Double-check your data. You can manipulate data directly on the displayed table.')
         edited_extract_df = st.data_editor(extract_df, num_rows="dynamic")
@@ -113,7 +115,6 @@ with file_characteristic:
     else:
         st.info('You should upload the file first')
         edited_extract_df = None
-
 
 
 
@@ -362,7 +363,7 @@ with non_compartment:
         if not non_compartment_df.empty:
             covariate_df = edited_extract_df.drop(['Time','Conc','Dose'],axis = 1).drop_duplicates(subset='ID')
             analysis_covariate_df = non_compartment_df.merge(covariate_df, on = 'ID')
-            non_compartment_df_final = st.data_editor(analysis_covariate_df, num_rows="dynamic")
+            non_compartment_df_final = st.data_editor(analysis_covariate_df)
             
             #Display the selection profile:
             plots = st.toggle('Display the individual profiles')
@@ -539,7 +540,7 @@ with one_compartment:
             if not iv_analysis_final.empty:
                 covariate_df = edited_extract_df.drop(['Time','Conc','Dose'],axis = 1).drop_duplicates(subset='ID')
                 iv_analysis_covariate_df = iv_analysis_final.merge(covariate_df, on = 'ID')
-                iv_analysis_covariate_final = st.data_editor(iv_analysis_covariate_df, num_rows="dynamic")
+                iv_analysis_covariate_final = st.data_editor(iv_analysis_covariate_df)
             else:
                 st.info('For non-compartmental analysis, there should be at least 3 data points for each individuals. Double check your input data.')
 
@@ -574,7 +575,7 @@ with one_compartment:
                 if not im_analysis_final.empty:
                     covariate_df = edited_extract_df.drop(['Time','Conc','Dose'],axis = 1).drop_duplicates(subset='ID')
                     im_analysis_covariate_df = im_analysis_final.merge(covariate_df, on = 'ID')
-                    im_analysis_covariate_final = st.data_editor(im_analysis_covariate_df, num_rows="dynamic")
+                    im_analysis_covariate_final = st.data_editor(im_analysis_covariate_df)
                 else:
                     st.info('For non-compartmental analysis, there should be at least 3 data points for each individuals. Double check your input data.')
 
