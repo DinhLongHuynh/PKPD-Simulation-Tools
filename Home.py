@@ -8,7 +8,7 @@ from scipy.stats import norm
 # Define the layout of the app
 st.set_page_config(page_title='PKPD SiAn Tools', page_icon='💊', layout="wide", initial_sidebar_state="auto", menu_items=None)
 st.sidebar.title('HOME')
-st.title('PKPD SiAn Tools')
+st.title('💊 PKPD SiAn Tools')
 st.caption('Version 1.2.0')
 st.write("""PKPD SiAn Tools - PKPD Simulation and Analysis Tools 1.2.0 is the web application developed by Dinh Long Huynh, a current Master's Student at Uppsala University, Sweden.
 
@@ -19,6 +19,7 @@ The ongoing 1.2.1 version will be updated soon, which incorporates the AI data c
 
 
 st.sidebar.success('Select a page above')
+
 
 
 
