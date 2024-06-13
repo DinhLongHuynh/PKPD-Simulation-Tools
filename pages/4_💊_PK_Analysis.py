@@ -43,9 +43,9 @@ with introduction:
     if uploaded_file is not None:
         file = uploaded_file
     elif iv_drug_file:
-        file = 'PKPD-Simulation_Tools/testdata/Phase_I_iv_drug.csv'
+        file = '../testdata/Phase_I_iv_drug.csv'
     elif im_drug_file:
-        file = 'PKPD-Simulation_Tools/testdata/Phase_I_im_drug.csv'
+        file = '../testdata/Phase_I_im_drug.csv'
 
     # Read and store the data in session state
     if file is not None:
