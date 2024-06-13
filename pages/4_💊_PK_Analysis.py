@@ -9,7 +9,6 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score, mean_squared_error
 from scipy.optimize import curve_fit
 from scipy.integrate import quad
-import os
 
 # Page setup
 st.set_page_config(page_title='PK Analysis', page_icon='💊', layout="wide", initial_sidebar_state="auto", menu_items=None)
@@ -48,9 +47,9 @@ with introduction:
     if uploaded_file is not None:
         file = uploaded_file
     elif iv_drug_file:
-        file = os.path.join('..', 'testdata', 'Phase_I_iv_drug.csv')
+        file = '../testdata/Phase_I_iv_drug.csv'
     elif im_drug_file:
-        file = os.path.join('..', 'testdata', 'Phase_I_im_drug.csv')
+        file = '../testdata/Phase_I_im_drug.csv'
 
 # Read and store the data in session state
     if file is not None:
