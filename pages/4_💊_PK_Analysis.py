@@ -95,7 +95,15 @@ with file_characteristic:
 
 
 with visualization:
+    # Define function used for the visualisation
+    def distribution_plots(data,x,xaxis_title,y_axis_title,header):
+        st.subheader(header)
+        nbins = st.slider(f'Edit the number of bins for {x} distribution:',value = 20)
+        fig = px.histogram(data, x=x,nbins=nbins)
+        fig.update_layout(title=header, xaxis_title=xaxis_title, yaxis_title=y_axis_title)
+        plot = st.plotly_chart(fig, use_container_width=True)
 
+    # Body code
     if edited_extract_df is not None:
       # Quick summary
       st.title('Quick Summary')
@@ -159,32 +167,19 @@ with visualization:
       with col2: 
           # plot the summary of Age
           if Age_col is not None: 
-              st.subheader('Age Distribution')
-              nbins_age = st.slider('Edit the number of bins for Age distribution:',value = 20)
-              fig = px.histogram(edited_extract_df, x='Age',nbins=nbins_age)
-              fig.update_layout(title='Age Distribution', xaxis_title='Age', yaxis_title='Freq.')
-              plot = st.plotly_chart(fig, use_container_width=True)
+              distribution_plots(data=edited_extract_df,x='Age',xaxis_title="Age",y_axis_title='Freq.',header='Age Distribution')
         
       col3, col4 = st.columns(2)
       with col3: 
           # plot the summary of Weight
           if Weight_col is not None: 
-            st.subheader('Weight Distribution')
-            nbins_weight = st.slider('Edit the number of bins for Weight distribution:',value = 20)
-            fig = px.histogram(edited_extract_df, x='Weight',nbins=nbins_weight)
-            fig.update_layout(title='Weight Distribution', xaxis_title='Weight', yaxis_title='Freq.')
-            plot = st.plotly_chart(fig, use_container_width=True)
+            distribution_plots(data=edited_extract_df,x='Weight',xaxis_title="Weight",y_axis_title='Freq.',header='Weight Distribution')
       
       
       with col4:
           # plot the summary of CLCR
           if CLCR_col is not None: 
-            st.subheader('Creatinine Clearance Distribution')
-            nbins_CLCR = st.slider('Edit the number of bins for CRCL distribution:',value = 20)
-            fig = px.histogram(edited_extract_df, x='CLCR',nbins=nbins_CLCR)
-            fig.update_layout(title='CLCR Distribution', xaxis_title='Creatinine Clearance', yaxis_title='Freq.')
-            plot = st.plotly_chart(fig, use_container_width=True)    
-
+            distribution_plots(data=edited_extract_df,x='CLCR',xaxis_title="Creatinine Clearance",y_axis_title='Freq.',header='CLCR Distribution')
 
 
       # Display the PK profile by Dose
