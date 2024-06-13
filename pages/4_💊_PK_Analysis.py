@@ -15,38 +15,60 @@ st.set_page_config(page_title='PK Analysis', page_icon='💊', layout="wide", in
 st.title("💊 PK Analysis Tools")
 introduction, file_characteristic, visualization, non_compartment, one_compartment = st.tabs(["Introduction",'File Characteristic','Data Visualization',"Non-compartmental Analysis", "One-compartmental Analysis"])
 
-
-
 with introduction:
+    # Introduction
     st.write(''' This page helps users to analyze the clinical trial data. There are two approaches to the analysis:
 
  - **Non-compartmental Analysis**: the analysis will be based on the discrete data points on the PK profile to conclude several PK parameters directly.
              
  - **One-compartmental Analysis**: the analysis will fit the observed data to the predefined model and then derive PK parameters from the model.''')
 
-    st.subheader('Input data')
-    file = st.file_uploader('Import your csv dataset here')
-    df = None
+    # File uploader
+    uploaded_file = st.file_uploader('Import your CSV dataset here')
+    st.caption('You can use these two demo data sets as application trial:')
+    col1, col2 = st.columns(2)
+
+    # Initialize file to None
+    file = None
+    with col1:
+        iv_drug_file = st.button('IV Drug Data')
+    with col2:
+        im_drug_file = st.button('IM Drug Data')
+
+    # Initialize df to None
+    if 'df' not in st.session_state:
+        st.session_state.df = None
+
+    # Handling button and imported file clicks
+    if uploaded_file is not None:
+        file = uploaded_file
+    elif iv_drug_file:
+        file = '/testdata/Phase_I_iv_drug.csv'
+    elif im_drug_file:
+        file = '/testdata/Phase_I_im_drug.csv'
+
+    # Read and store the data in session state
     if file is not None:
-        df = pd.read_csv(file)
+        st.session_state.df = pd.read_csv(file)
+        st.success('File importing success')
         st.caption('Next step is characterising the data with File Characteristic tab.')
-       
-    
-    
+
+
+
 
 
 with file_characteristic:
-    st.header("File Characteristic")
-    st.caption('Select the column in your file that corresponds to these descriptions.')
-    
-    #Characterise the columns
-    if df is not None:
+    if st.session_state.df is not None:
+        df = st.session_state.df
+        st.header("File Characteristic")
+        st.caption('Select the column in your file that corresponds to these descriptions.')
+
         # Use the similarity check to pre-assign mandatory columns
-        default_id_col = process.extract('ID',df.columns,limit=1)[0][0]
-        default_time_col = process.extract('Time',df.columns,limit=1)[0][0]
-        default_conc_col = process.extract('Conc',df.columns,limit=1)[0][0]
-        default_dose_col = process.extract('Dose',df.columns,limit=1)[0][0]
-        
+        default_id_col = process.extract('ID', df.columns, limit=1)[0][0]
+        default_time_col = process.extract('Time', df.columns, limit=1)[0][0]
+        default_conc_col = process.extract('Conc', df.columns, limit=1)[0][0]
+        default_dose_col = process.extract('Dose', df.columns, limit=1)[0][0]
+
         default_id_index = df.columns.get_loc(default_id_col)
         default_time_index = df.columns.get_loc(default_time_col)
         default_conc_index = df.columns.get_loc(default_conc_col)
@@ -54,41 +76,44 @@ with file_characteristic:
 
         # Let user define the columns
         col1, col2 = st.columns(2)
-        with col1: # Use pre-assign columns as the default argument
+        with col1:  # Use pre-assign columns as the default argument
             st.write('Compulsory Information')
-            ID_col = st.selectbox('Select a column that represent ID',df.columns,index = default_id_index)
-            Time_col = st.selectbox('Select a column that represent Time',df.columns,index = default_time_index)
-            Concentration_col = st.selectbox('Select a column that represent Concentration',df.columns, index = default_conc_index)
-            Dose_col = st.selectbox('Select a column that represent Dose',df.columns,index = default_dose_index)
-        with col2: 
+            ID_col = st.selectbox('Select a column that represent ID', df.columns, index=default_id_index)
+            Time_col = st.selectbox('Select a column that represent Time', df.columns, index=default_time_index)
+            Concentration_col = st.selectbox('Select a column that represent Concentration', df.columns, index=default_conc_index)
+            Dose_col = st.selectbox('Select a column that represent Dose', df.columns, index=default_dose_index)
+        with col2:
             st.write('Additional Information')
-            Age_col = st.selectbox('Select a column that represent Age',df.columns,index=None)
-            Weight_col = st.selectbox('Select a column that represent Body Weight',df.columns,index=None)
-            Gender_col = st.selectbox('Select a column that represent Gender',df.columns,index=None)
-            CLCR_col = st.selectbox('Select a column that represent Clearance Creatinine',df.columns,index=None)
+            Age_col = st.selectbox('Select a column that represent Age', df.columns, index=None)
+            Weight_col = st.selectbox('Select a column that represent Body Weight', df.columns, index=None)
+            Gender_col = st.selectbox('Select a column that represent Gender', df.columns, index=None)
+            CLCR_col = st.selectbox('Select a column that represent Clearance Creatinine', df.columns, index=None)
 
         # Define the extracted columns from df
-        col_list = [ID_col,Time_col,Concentration_col,Dose_col,Age_col,Weight_col,Gender_col,CLCR_col]
-        col_name = ['ID','Time','Conc','Dose','Age','Weight','Gender','CLCR']
+        col_list = [ID_col, Time_col, Concentration_col, Dose_col, Age_col, Weight_col, Gender_col, CLCR_col]
+        col_name = ['ID', 'Time', 'Conc', 'Dose', 'Age', 'Weight', 'Gender', 'CLCR']
         extracted_col = []
         extracted_col_name = []
-        for column, column_name in zip(col_list,col_name):
-            if column is not None: 
+        for column, column_name in zip(col_list, col_name):
+            if column is not None:
                 extracted_col.append(column)
                 extracted_col_name.append(column_name)
-                
-       # Extract df and unify the columns' names
+
+        # Extract df and unify the columns' names
         extract_df = df[extracted_col]
         extract_df.columns = extracted_col_name
 
         # Allow the edit from user on the dataframe
         st.subheader('Data Frame')
         st.caption('Double-check your data. You can manipulate data directly on the displayed table.')
-        edited_extract_df = st.data_editor(extract_df,num_rows="dynamic")
+        edited_extract_df = st.data_editor(extract_df, num_rows="dynamic")
 
-    else: 
+        # Update the session state with the edited dataframe
+        st.session_state.edited_extract_df = edited_extract_df
+    else:
         st.info('You should upload the file first')
         edited_extract_df = None
+
 
 
 
