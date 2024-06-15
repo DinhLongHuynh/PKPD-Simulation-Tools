@@ -16,7 +16,7 @@ This application helps students and researchers to simulate and analyze differen
 st.link_button("❓Helps", "https://pkpd-sian-tools.streamlit.app/Helps")
 st.write("""In version 1.3.0, the 💊 Combine Dosing Regimen page has been transformed into 💊 Multiple Dose PK Simulation, giving users the freedom to define the dosing regimen, including dose amount, starting time point, and infusion duration.
          
-The ongoing 1.4.0 version will be updated soon, which incorporates two new features, includuing automatical data cleaning tools, which helps draw several error warnings for the imported data and One-compartmental Analysis for multiple dosing regimen.""")
+The ongoing 1.4.0 version will be updated soon, which incorporates two new features, including automatical data cleaning tools, which help draw several error warnings for the imported data and One-compartmental Analysis for multiple dosing regimen.""")
 
 # Sidebar options
 st.sidebar.success('Select a page above')
