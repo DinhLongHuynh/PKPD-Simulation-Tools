@@ -21,33 +21,6 @@ st.markdown(
 st.markdown('<h2 class="centered-text">---------------------💊💊💊---------------------</h2>', unsafe_allow_html=True)
 st.write("\n")
 
-st.header('Combine Dosing Reigmen Simulation PK')
-st.caption('Further descriptions of the parameters and variables used in the simulation:')
-st.write('- **Dose IV (mg):** The data type is **float**. This is the dose of intravenous drug.')
-st.write('- **Infusion Duration (h):** The data type is **integer**. This is the infusion time of the i.v. drugs. Because the scenario is prolonged infusion drugs, the value of Infusion Duration should be higher than 0 hour.')
-st.write('- **Dose IM (mg):** The data type is **float**. This is the dose of intramuscular drug in mg. However, it can be used for oral drugs as well.')
-st.write('- **Start point IM (h):** The data type is **integer**. This is the time point when the intramuscular drug is injected. If the starting point IM is set as 0 hour, that means we start the IM drug from the beginning, at the same time as thes IV drug.')
-st.write('- **Interval Dose IM (h):** The data type is a **list of integers**. The values are the relative time points when you want to inject the i.m. drug. Because time points are relative, the first i.m. dose always starts at 0 hour. For example, if you want to inject triple dose a day of an i.m drug, the input should be 0,8, and 16 hour.')
-st.write("- **Clearance (L/h):** The data type is **float**. This is the drug's total clearance.")
-st.write('- **Volume of Distribution (L):** The data type is **float**. This is the volume of distribution.')
-st.write('- **Absorption Constant (h-1):** The data type is **float**. This is the absorption rate constant, ka.')
-st.write('- **Bioavailability:** The data type is **float**. This is the total bioavailability of drugs on a scale from 0 to 1. For example, if the bioavailability is 85%, the input value should be 0.85.')
-st.write('- **Simulation Range (h):** The data type is **integer**. This is the endpoint of the time range on the simulation plot. For example, if you input 100, the plot will show the simulation within the range between 0 and 100 hour.')
-
-st.write("\n")
-st.markdown(
-    """
-    <style>
-    .centered-text {
-        text-align: center;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-st.markdown('<h2 class="centered-text">---------------------💊💊💊---------------------</h2>', unsafe_allow_html=True)
-st.write("\n")
-
 st.header('PK Simulation')
 st.caption('Further descriptions of the parameters and variables used in the simulation:')
 st.write('- **Dose (mg):** The data type is **float**. This is the dosage used for simulation.')
@@ -90,6 +63,31 @@ st.write("- **Omega:**: The data type is **float**. Each PD parameter has its co
 st.latex(r'Parameter_{i} = Parameter_{population} \times e^{n_{i}}')
 st.write("- **Sigma Residual**: The data type is **float**. This is the standard deviation of the residual distribution. From this distribution, a sample with specific size, which is the number of patients, is picked and each residual values will be added to the final effect with the following formula:")
 st.latex(r'Effect_{i,final} = Effect_{i} + Residual_{i}')
+
+st.write("\n")
+st.markdown(
+    """
+    <style>
+    .centered-text {
+        text-align: center;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+st.markdown('<h2 class="centered-text">---------------------💊💊💊---------------------</h2>', unsafe_allow_html=True)
+st.header('Multiple Dose PK Simulation')
+st.caption('Further descriptions of the parameters and variables used in the simulation:')
+st.write('- **Absorption Rate Constant (h-1):** The data type is **float**. This is the rate constant that characterizes the absorption, ka. If your dosing regimen has at least 1 non-iv dose, the ka is mandatory. Otherwise, this value can be left as None.')
+st.write('- **Elimination Rate Constant (h-1):** The data type is **float**. This is the rate constant that charaterizes the elimination, ke.')
+st.write('- **Volume of Distribution (L):** The data type is **float**. This is the volume of distribution.')
+st.write('- **Simulation Range (h):** The data type is **float**. This is the endpoint of the time range on the simulation plot. For example, if you input 100, the plot will show the simulation within the range between 0 and 100 hour.')
+st.write('- **Start time (h):** The data type is *float*. This is the time point when you start the dose.')
+st.write('- **Dose Amount (mg):** The data type is **float**. This is dose of the drug.')
+st.write('- **Infusion Duration (h):** The data type is **integer**. This is the specific parameter of IV drugs. If the scenario is prolonged infusion drugs, the value of Infusion Duration should be higher than 0 hour. Otherwise, this value can be left as None.')
+st.write('- **Bioavailability:** The data type is **float**. This is the total bioavailability of drugs on a scale from 0 to 1. For example, if the bioavailability is 85%, the input value should be 0.85.')
+
+
 
 st.write("\n")
 st.markdown(
