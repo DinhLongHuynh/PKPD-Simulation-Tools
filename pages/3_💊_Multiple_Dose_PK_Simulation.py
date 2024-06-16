@@ -1,5 +1,6 @@
 import streamlit as st
 import numpy as np
+import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 
 # Define function for the single dose simulation
@@ -114,7 +115,11 @@ if run_simulation:
                 conc[i] = pk_prolonged_iv_dose(dose=dose, time = np.arange(0,simulation_range-start_time+0.1, 0.1), ke=ke, Vd=Vd,infusion_duration=dose_regimen['infusion_duration'])
             
         elif dose_regimen['label'] == 'non_iv':
-            conc[i] = pk_non_iv_dose(dose=dose, F=dose_regimen['F'], time = np.arange(0,simulation_range-start_time+0.1, 0.1), ke=ke, Vd=Vd,ka=ka)
+            if ka is not None:
+                conc[i] = pk_non_iv_dose(dose=dose, F=dose_regimen['F'], time = np.arange(0,simulation_range-start_time+0.1, 0.1), ke=ke, Vd=Vd,ka=ka)
+            elif ka is None:
+                st.error('You need to define ka for the simulation of Non-IV Drug.')
+                break
         
         add_conc[i] = np.zeros((int(start_time/0.1)))
         conc_each_dose[i] = np.concatenate((add_conc[i],conc[i]),axis=0)
