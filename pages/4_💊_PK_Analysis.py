@@ -9,12 +9,12 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score, mean_squared_error
 from scipy.optimize import curve_fit
 from scipy.integrate import quad
-import os
 
 # Page setup
 st.set_page_config(page_title='PK Analysis', page_icon='💊', layout="wide", initial_sidebar_state="auto", menu_items=None)
 st.title("💊 PK Analysis Tools")
 introduction, file_characteristic, visualization, non_compartment, one_compartment = st.tabs(["Introduction",'File Characteristic','Data Visualization',"Non-compartmental Analysis", "One-compartmental Analysis"])
+
 
 
 with introduction:  
@@ -47,15 +47,17 @@ with introduction:
     if uploaded_file is not None:
         file = uploaded_file
     elif iv_drug_file:
-        file = '/mount/src/pkpd-simulation-tools/testdata/Phase_I_iv_drug.csv'
+        file = '/Users/lod/Desktop/Projects/PKPD_Simulation_App/testdata/Phase_I_iv_drug.csv'
     elif im_drug_file:
-        file = '/mount/src/pkpd-simulation-tools/testdata/Phase_I_im_drug.csv'
+        file = '/Users/lod/Desktop/Projects/PKPD_Simulation_App/testdata/Phase_I_iv_drug.csv'
 
 # Read and store the data in session state
     if file is not None:
         st.session_state.df = pd.read_csv(file)
         st.success('File importing success')
         st.caption('Next step is characterising the data with File Characteristic tab.')
+
+
 
 with file_characteristic:
     if st.session_state.df is not None:
@@ -356,7 +358,7 @@ with non_compartment:
         
         # Print warning with the unqualified ID
         if len(unqualified_id) > 0:
-            st.error(f'ID {", ".join(str(id) for id in unqualified_id)} have less than 3 data points, which is insufficient for fitting the model. Double check your data.')
+            st.error(f'**Insufficient data:** ID {", ".join(str(id) for id in unqualified_id)} have less than 3 data points, which is insufficient for fitting the model. Double check your data.')
 
         # Add covariates to the final results dataframe
         if not non_compartment_df.empty:
@@ -388,7 +390,7 @@ with non_compartment:
                             non_compartmental_plots(df_whole_profile,df_lambda_profile)
     
         else:
-            st.info('For non-compartmental analysis, there should be at least 3 data points for each individuals. Double check your input data.')
+            st.error('**Insufficient Data:** For non-compartmental analysis, there should be at least 3 data points for each individuals. Double check your input data.')
     
     else:
         st.info('You should upload the file first')
@@ -533,7 +535,7 @@ with one_compartment:
             
             # Print warning for unqualified id
             if len(unqualified_id) > 0:
-                st.error(f'ID {", ".join(str(id) for id in unqualified_id)} have less than 3 data points, which is insufficient for fitting the model. Double check your data.')
+                st.error(f'**Insufficient data:** ID {", ".join(str(id) for id in unqualified_id)} have less than 3 data points, which is insufficient for fitting the model. Double check your data.')
 
             # Add the covariates to the dataframe
             if not iv_analysis_final.empty:
@@ -541,7 +543,7 @@ with one_compartment:
                 iv_analysis_covariate_df = iv_analysis_final.merge(covariate_df, on = 'ID')
                 iv_analysis_covariate_final = st.data_editor(iv_analysis_covariate_df)
             else:
-                st.info('For non-compartmental analysis, there should be at least 3 data points for each individuals. Double check your input data.')
+                st.error('**Insufficient data:** For non-compartmental analysis, there should be at least 3 data points for each individuals. Double check your input data.')
 
         st.write('\n')
 
@@ -568,7 +570,7 @@ with one_compartment:
                 
                 # Print warning for unqualified id
                 if len(unqualified_id) > 0:
-                    st.error(f'ID {", ".join(str(id) for id in unqualified_id)} have less than 3 data points, which is insufficient for fitting the model. Double check your data.')
+                    st.error(f'**Insufficient data:** ID {", ".join(str(id) for id in unqualified_id)} have less than 3 data points, which is insufficient for fitting the model. Double check your data.')
 
                 # Add the covariates to the dataframe
                 if not im_analysis_final.empty:
@@ -576,7 +578,7 @@ with one_compartment:
                     im_analysis_covariate_df = im_analysis_final.merge(covariate_df, on = 'ID')
                     im_analysis_covariate_final = st.data_editor(im_analysis_covariate_df)
                 else:
-                    st.info('For non-compartmental analysis, there should be at least 3 data points for each individuals. Double check your input data.')
+                    st.info('**Insufficient data:** For non-compartmental analysis, there should be at least 3 data points for each individuals. Double check your input data.')
 
 
                 

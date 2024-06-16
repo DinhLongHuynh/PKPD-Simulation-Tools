@@ -3,7 +3,7 @@ import pandas as pd
 
 st.set_page_config(page_title='Helps', page_icon='❓', layout="wide", initial_sidebar_state="auto", menu_items=None)
 st.title('❓ Helps')
-st.write('''This page contains further interpretation of the parameters and variables used in the different simulation applications.
+st.write('''This page further interprets the parameters, variables, and algorithms used in the different simulation/analysis applications.
 
 The application provides the common standard units used in clinical trials, i.e. hour for time, mg for dose, mg/L for concentration. However, the units can be flexible depending on the users' case. In this scenario, users should keep in mind the units when interpreting the simulation and analysis results.''')
 
@@ -18,7 +18,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-st.markdown('<h2 class="centered-text">---------------------💊💊💊---------------------</h2>', unsafe_allow_html=True)
+st.markdown('<h2 class="centered-text">-------------💊💊💊-------------</h2>', unsafe_allow_html=True)
 st.write("\n")
 
 st.header('PK Simulation')
@@ -47,13 +47,13 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-st.markdown('<h2 class="centered-text">---------------------💊💊💊---------------------</h2>', unsafe_allow_html=True)
+st.markdown('<h2 class="centered-text">-------------💊💊💊-------------</h2>', unsafe_allow_html=True)
 st.write("\n")
 
 st.header('PD Simulation')
 st.caption('Further descriptions of the parameters and variables used in the simulation:')
 st.write('- **Population Emax:** The data type is **float**. This is the mean of maximum effect among the whole population. The unit of Emax depends on the diseases or biomarkers.')
-st.write('- **Population EC50:** The data type is **float**. This is the mean of half the maximal effective concentration among the whole population. The unit of EC50 depends on the concentration of the investigating drugs. For example, if the concentration has a unit of mg/L, the EC50 also has a unit of mg/L.')
+st.write('- **Population EC50:** The data type is **float**. This is the mean of half maximal effective concentration among the whole population. The unit of EC50 depends on the concentration of the investigating drugs. For example, if the concentration has a unit of mg/L, the EC50 also has a unit of mg/L.')
 st.write('- **Population Ebaseline:** The data type is **float**. This is the mean baseline effect of the whole population when the concentration of drug at 0. The unit of Ebaseline is the same as Emax.')
 st.write('- **Population Hill Coefficient:** The data type is **float**. This is the mean hill among the whole population.')
 st.write('- **Number of Patients:** The data type is **integer**. This is the number of patients that you want to simulate.')
@@ -61,7 +61,7 @@ st.write("- **E Limit:** The data type is **float**. This is the drug effect tha
 st.write('- **Concentration range:** The data type is **integer**. This is the endpoint of the concentration range on the simulation plot. For example, if you input 100, the plot will show the simulation within the range between 0 and 100 units of concentration. The unit will be the same as your input.')
 st.write("- **Omega:**: The data type is **float**. Each PD parameter has its corresponding omega, which represents the standard deviation of the normal distribution with a mean of 0. Then, a sample of a specific size, which is the number of patients, is picked from this distribution, and each value in the sample (denoted as ni) is used to estimate the variability of the parameters. The estimation follows this formula: ")
 st.latex(r'Parameter_{i} = Parameter_{population} \times e^{n_{i}}')
-st.write("- **Sigma Residual**: The data type is **float**. This is the standard deviation of the residual distribution. From this distribution, a sample with a specific size, which is the number of patients, is picked and each residual value will be added to the final effect with the following formula:")
+st.write("- **Sigma Residual**: The data type is **float**. This is the standard deviation of the residual distribution. From this distribution, a sample with specific size, which is the number of patients, is picked and each residual values will be added to the final effect with the following formula:")
 st.latex(r'Effect_{i,final} = Effect_{i} + Residual_{i}')
 
 st.write("\n")
@@ -75,11 +75,11 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-st.markdown('<h2 class="centered-text">---------------------💊💊💊---------------------</h2>', unsafe_allow_html=True)
+st.markdown('<h2 class="centered-text">-------------💊💊💊-------------</h2>', unsafe_allow_html=True)
 st.header('Multiple Dose PK Simulation')
 st.caption('Further descriptions of the parameters and variables used in the simulation:')
 st.write('- **Absorption Rate Constant (h-1):** The data type is **float**. This is the rate constant that characterizes the absorption, ka. If your dosing regimen has at least 1 non-iv dose, the ka is mandatory. Otherwise, this value can be left as None.')
-st.write('- **Elimination Rate Constant (h-1):** The data type is **float**. This is the rate constant that characterizes the elimination, ke.')
+st.write('- **Elimination Rate Constant (h-1):** The data type is **float**. This is the rate constant that charaterizes the elimination, ke.')
 st.write('- **Volume of Distribution (L):** The data type is **float**. This is the volume of distribution.')
 st.write('- **Simulation Range (h):** The data type is **float**. This is the endpoint of the time range on the simulation plot. For example, if you input 100, the plot will show the simulation within the range between 0 and 100 hour.')
 st.write('- **Start time (h):** The data type is *float*. This is the time point when you start the dose.')
@@ -100,13 +100,13 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-st.markdown('<h2 class="centered-text">---------------------💊💊💊---------------------</h2>', unsafe_allow_html=True)
+st.markdown('<h2 class="centered-text">-------------💊💊💊-------------</h2>', unsafe_allow_html=True)
 st.write("\n")
 
 st.header('PK Analysis')
 st.subheader('File Characteristic')
 st.write('- **Imported file**: The input file format should be a comma-separated value (.csv). After importing the data, the "File Characteristic" page allows users to select the columns in the input file that correspond to the given information.')
-st.write("- **Compulsory Information**: they are the fundamental data that one clinical study must have. If your dataset doesn't have enough compulsory information, you should double-check your data, or your study design. ")
+st.write("- **Compulsory Information**: they are the fundamental data that one clinical study must have. If your dataset doesn't have enough compulsory information, you should double check your data, or your study design. ")
 st.write("- **Additional Information**: they are optional. If they are not available, you can leave it blank.")
 st.write("\n")
 st.write("\n")
@@ -148,16 +148,16 @@ st.write('**1) IV drug analysis**: This scenario can be used for drugs that are 
 st.latex(r'ln(C) = ln(C_{0}) - k_{e} \times Time')
 st.caption('Further descriptions of the variables and parameters used in the linear regression:')
 st.write('- **ln(C)** _ variable: This is the logarithm of concentration, which is the dependent variable of the linear regression. This is the unitless variable.')
-st.write('- **Time** _ variable: This is the time point when the concentration is measured, which is the independent variable of the linear regression. The unit of time can be flexible depending on the study design.')
-st.write('- **ln(C0)** _ parameter: This is the logarithm of initial concentration, right after the drug administration into the body. The logarithm is a unitless variable but the initial concentration has the same unit as the concentration used in the study.')
+st.write('- **Time** _ variable: This is the time point when the concentration is measured, which is the independent variable of the linear regression. The unit of time can be flexible depend on the study design.')
+st.write('- **ln(C0)** _ parameter: This is the logarithm of initial concentration, right after the drug administration into the body. The logarithm is unitless variable but the initial concentration has the same unit with the concentration used in the study.')
 st.write('- **ke** _ parameter: This is the elimination rate constant. The unit of ke is the inverse of the time unit used in the analysis. For example, if the time unit is hours (h), the ke unit is 1/h. ')
 st.write('- **R2** _ model evaluation metric: This is the R-squared score for the linear regression. It is a unitless metric.')
 st.write('- **RMSE** _ model evaluation metric: This is the root mean squared error for the linear regression. It has the same unit with the concentration used in the study.')
-st.write('- **Apparent Vd** _ generated parameter: This is the drug volume of distribution. It can have flexible units depending on the dose and the concentration used in the study. It is called apparent Vd as it incorporates the drug bioavailability. If you have information about the drug bioavailability, you can calculate the true value of Vd.')
+st.write('- **Apparent Vd** _ generated parameter: This is the drug volume of distribution. It can have flexible unit depending on the dose and the concentration used in the study. It is called apparent Vd as it incorporates the drug bioavailability. If you have information about the drug bioavailability, you can calculate the true value of Vd.')
 st.latex(r'V_{d,Apparent} = \frac{Dose}{C_{0}}')
 st.write('- **Apparent CL** _ generated parameter: This is the drug total apparent clearance. It has the unit of volume divided by time, therefore the unit depends on the concentration and time unit used in the analysis. Clearance is calculated from ke and Vd. It is called apparent clearance as it incorporates the drug bioavailability. If you have information about the drug bioavailability, you can calculate the true value of clearance.')
 st.latex(r'CL_{Apparent} = k_{e} \times V_{d,Apparent}')
-st.write('- **AUC_0-inf** _ generated parameter: The AUC from time point 0 to the infinity. This AUC has a unit that depends on the concentration and time used in the analysis. For example, if the unit of concentration is mg/L and the unit of time is hour, AUC has the unit of mg*h/L.')
+st.write('- **AUC_0-inf** _ generated parameter: The AUC from time point 0 to the infinity. This AUC has the unit depends on the concentration and time used in the analysis. For example, if the unit of concentration is mg/L and unit of time is hour, AUC has the unit of mg*h/L.')
 st.latex(r'\text{AUC}_{0-\infty} = \int_{0}^{\infty} C_0 \cdot e^{-k t} \, dt = \frac {C_{0}}{k_{e}}')
 st.write('- **Half life** _ generated parameter: This is the time it takes for the body to eliminate half of the drug. The half life has the same unit with the time unit used in the analysis.')
 st.latex(r'T_{1/2} = \frac{ln(2)}{k_{e}}')
@@ -166,9 +166,9 @@ st.write("\n")
 st.write('**2) Non-IV drug analysis**: This scenario can be used for drugs that are gradually absorbed into the central plasma compartment. The model used for this scenario is described by the following equation:')
 st.latex(r'C = \frac{F \times \text{Dose} \times k_a}{V_{d} \times (k_a - k_{e})} \times \left( e^{-k_{e} \times time} - e^{-k_a \times time} \right)')
 st.write("The non-linear model fitting process requires initial guesses for the parameters, which can be based on previous studies. If the initial guesses are significantly different from the actual values, alternative values should be considered.")
-st.caption('Further descriptions of the  variables and parameters used in the non-linear regression:')
+st.caption('Further descriptions of the  variables and parameters used in the non-linear regressiom:')
 st.write("- **C** _ variable: This is the drug's plasma concentration, which is the dependent variable of the non-linear regression. The unit of concentration can be flexible depending on your study design.")
-st.write('- **Time** _ variable: This is the time point when the concentration is measured, which is the independent variable of the linear regression. The unit of time can be flexible depending on the study design.')
+st.write('- **Time** _ variable: This is the time point when the concentration is measured, which is the independent variable of the linear regression. The unit of time can be flexible depend on the study design.')
 st.write("- **F** _ constant: This is the total bioavailability of the drug, which is unitless. It can be determined from the previous study or estimated using different methodologies. The reason why F is a predefined constant instead of a parameter is that it will require at least 40 data points to generate a reliable regression if F is included as a parameter, which is unavailable in the clinical trial scenario.")
 st.write("- **Dose** _ constant: This is the dose of the correponding id. The unit can be flexible depending on your study.")
 st.write('- **ka** _ parameter: This is the absorption rate constant. The unit of ka is the inverse of the time unit used in the analysis. For example, if the time unit is hours (h), the ke unit is 1/h.')
@@ -179,9 +179,9 @@ st.write('- **Tmax** _ generated parameter: This is the time needed for the drug
 st.latex(r'T_{max} = \frac{ln(k_{a})-ln(k_{e})}{k_{a}-k_{e}} ')
 st.write('- **Cmax** _ generated parameter: This is the maximum concentration of drug. It has the same unit with the concentration used in the study.')
 st.latex(r'C_{max} = \frac{F \times \text{Dose} \times k_a}{V_{d} \times (k_a - k_{e})} \times \left( e^{-k_{e} \times T_{max}} - e^{-k_a \times T_{max}} \right)')
-st.write('- **Half life**: This is the time it takes for the body to eliminate half of the drug. The half life has the same unit as the time unit used in the analysis. Half life is determined by the following formula. In the formula, k is the terminal slope of the PK profile. If the drug has ka < ke, the k is ka. Otherwise, it is ke.')
+st.write('- **Half life**: This is the time it takes for the body to eliminate half of the drug. The half life has the same unit with the time unit used in the analysis. Half life is determined by the following formula. In the formula, k is the terminal slope of the PK profile. If the drug has ka < ke, the k is ka. Otherwise, it is ke.')
 st.latex(r'T_{1/2} = \frac{ln(2)}{k}')
-st.write('- **AUC_0-inf** _ generated parameter: The AUC from time point 0 to the infinity. This AUC has a unit that depends on the concentration and time used in the analysis. For example, if the unit of concentration is mg/L and the unit of time is hour, AUC has the unit of mg*h/L. To determine AUC_0-inf, the integral from 0 to infinity of the model equation is considered.')
+st.write('- **AUC_0-inf** _ generated parameter: The AUC from time point 0 to the infinity. This AUC has the unit depends on the concentration and time used in the analysis. For example, if the unit of concentration is mg/L and unit of time is hour, AUC has the unit of mg*h/L. To determine AUC_0-inf, the integrel from 0 to infinity of model equation is considered.')
 st.latex(r'\text{AUC}_{0-\infty} = \int_{0}^{\infty} \frac{F \times \text{Dose} \times k_a}{V_d \times (k_a - k_e)} \times \left( e^{-k_e \times t} - e^{-k_a \times t} \right) \, dt')
 st.write('- **Clearance** _ generated parameter: This is the total clearance of drug. It has the unit of volume divided by time, therefore the unit depends on the concentration and time unit used in the analysis. Clearance is calculated from Dose and AUC_0-inf.')
 st.latex(r'CL = \frac{\text{Dose}}{AUC_{0-inf}}')

@@ -118,7 +118,7 @@ if run_simulation:
                 conc[i] = pk_non_iv_dose(dose=dose, F=dose_regimen['F'], time = np.arange(0,simulation_range-start_time+0.1, 0.1), ke=ke, Vd=Vd,ka=ka)
             else:
                 conc[i] = np.zeros((np.arange(0,simulation_range-start_time+0.1, 0.1).shape))
-                st.error('You need to define ka for the simulation of Non-IV Drug.')
+                st.error('**Parameter Mismatch:** You need to define ka for the simulation of Non-IV Drug.')
                 break
         
         add_conc[i] = np.zeros((int(start_time/0.1)))
