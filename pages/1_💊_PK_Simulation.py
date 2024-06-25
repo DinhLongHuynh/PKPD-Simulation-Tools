@@ -54,7 +54,16 @@ def pk_simulation(dose=100, CL_pop=2, V_pop=50, ka_pop=None, F_pop=1, n_patients
                 fig.add_hline(y=C_limit, line_dash="dash", line_color="red")
     fig.update_xaxes(title_text='Time (h)')
     fig.update_layout(title='PK simulation')
-    st.plotly_chart(fig)
+
+    config = {
+    'toImageButtonOptions': {
+        'format': 'png', 
+        'filename': 'PK_simulation',
+        'height': None,
+        'width': None,
+        'scale': 5
+    }}
+    st.plotly_chart(fig,config=config)
 
 #Page setup
 st.set_page_config(page_title='Variability PK Tools', page_icon='💊', layout="wide", initial_sidebar_state="auto", menu_items=None)

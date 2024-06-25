@@ -33,7 +33,16 @@ def pd_simulation(Emax=6.43, EC50=5.38, Ebaseline=1, hill=1, n_patients=1, sig_r
     fig.update_yaxes(title_text='Effect')
     fig.update_xaxes(title_text='Concentration')
     fig.update_layout(title='PD simulation')
-    st.plotly_chart(fig)
+
+    config = {
+    'toImageButtonOptions': {
+        'format': 'png', 
+        'filename': 'PD_simulation',
+        'height': None,
+        'width': None,
+        'scale': 5
+    }}
+    st.plotly_chart(fig, config = config)
 
 
 # Page setup 

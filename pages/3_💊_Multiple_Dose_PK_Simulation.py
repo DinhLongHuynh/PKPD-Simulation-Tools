@@ -133,11 +133,22 @@ if run_simulation:
         for i, conc_array in conc_each_dose.items():
             fig.add_trace(go.Scatter(x=np.arange(0, simulation_range+0.1, 0.1), y=conc_array, mode='lines', name=f'Dose {i+1}'))
     if combine_profile:
-        fig.add_trace(go.Scatter(x=np.arange(0,simulation_range+0.1, 0.1), y=simulate_conc, mode='lines',name='Combine Profile'))
-    fig.update_yaxes(title_text='Concentration] (mg/L)')
+        fig.add_trace(go.Scatter(x=np.arange(0,simulation_range+0.1, 0.1), y=simulate_conc, mode='lines',name='Combined Profile'))
+    fig.update_yaxes(title_text='Concentration (mg/L)')
     fig.update_xaxes(title_text='Time (h)')
     fig.update_layout(title='PK simulation')
-    st.plotly_chart(fig)
+
+    # Characterize the downloaded image 
+    config = {
+    'toImageButtonOptions': {
+        'format': 'png', 
+        'filename': 'Multiple_PK_simulation',
+        'height': None,
+        'width': None,
+        'scale': 5
+    }}
+
+    st.plotly_chart(fig, config = config)
         
         
 

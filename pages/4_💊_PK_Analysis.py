@@ -17,6 +17,7 @@ introduction, file_characteristic, visualization, non_compartment, one_compartme
 
 
 
+
 with introduction:  
 # Introduction
     st.write(''' This page helps users to analyze the clinical trial data. There are two approaches to the analysis:
@@ -47,9 +48,9 @@ with introduction:
     if uploaded_file is not None:
         file = uploaded_file
     elif iv_drug_file:
-        file = '/mount/src/pkpd-simulation-tools/testdata/Phase_I_iv_drug.csv'
+        file = '/Users/lod/Desktop/Projects/PKPD_Simulation_App/testdata/Phase_I_iv_drug.csv'
     elif im_drug_file:
-        file = '/mount/src/pkpd-simulation-tools/testdata/Phase_I_im_drug.csv'
+        file = '/Users/lod/Desktop/Projects/PKPD_Simulation_App/testdata/Phase_I_im_drug.csv'
 
 # Read and store the data in session state
     if file is not None:
@@ -127,8 +128,16 @@ with visualization:
         st.subheader(header)
         nbins = st.slider(f'Edit the number of bins for {x} distribution:',value = 20)
         fig = px.histogram(data, x=x,nbins=nbins)
+        fig.update_traces(marker_line_color='black', marker_line_width=1)
         fig.update_layout(title=header, xaxis_title=xaxis_title, yaxis_title=y_axis_title)
-        plot = st.plotly_chart(fig, use_container_width=True)
+        config_dis = {
+        'toImageButtonOptions': {
+        'format': 'png', 
+        'filename': f'{x}_distribution',
+        'height': None,
+        'width': None,
+        'scale': 5 }}
+        plot = st.plotly_chart(fig, use_container_width=True, config = config_dis)
 
     # Body code
     if edited_extract_df is not None:
@@ -141,15 +150,22 @@ with visualization:
             # Handling data: 
             st.subheader('Number of ID by Dose')
             id_count_df = edited_extract_df.groupby('Dose')['ID'].nunique().reset_index(name='ID_count')
-            id_count_df['Dose'] = id_count_df['Dose'].astype(str)+'mg' # Turn dose into category for better visualization
+            id_count_df['Dose'] = 'Dose ' + id_count_df['Dose'].astype(str) # Turn dose into category for better visualization
 
             # Draw plot
             default_plot_title = 'Number of ID by Dose'
             default_xlabel = 'ID Counts'
             default_ylabel = 'Dose'
-            fig = px.bar(id_count_df, x='ID_count', y='Dose', orientation='h',color = 'Dose', title =default_plot_title ,color_discrete_sequence=px.colors.qualitative.Safe)
+            fig = px.bar(id_count_df, x='ID_count', y='Dose', orientation='h',color = 'Dose', title = default_plot_title ,color_discrete_sequence=px.colors.qualitative.Safe)
             fig.update_layout(xaxis_title=default_xlabel, yaxis_title=default_ylabel)
-            plot = st.plotly_chart(fig, use_container_width=True)
+            config = {
+            'toImageButtonOptions': {
+            'format': 'png', 
+            'filename': 'ID_counts_by_Dose',
+            'height': None,
+            'width': None,
+            'scale': 5  }}
+            plot = st.plotly_chart(fig, use_container_width=True,config=config)
 
             # Plot characteristic
             plot_title = st.text_input('Edit plot title:',value = 'Number of ID by Dose')
@@ -161,7 +177,8 @@ with visualization:
                 ylabel = st.text_input('Edit y label:',value = 'Dose')
             
             fig.update_layout(title=plot_title, xaxis_title=xlabel, yaxis_title=ylabel)
-            plot.plotly_chart(fig, use_container_width=True)
+
+            plot.plotly_chart(fig, use_container_width=True,config = config)
         
         # plot the summary of study arms by Dose and Gender
         else: 
@@ -177,6 +194,13 @@ with visualization:
             default_ylabel = 'Dose'
             fig = px.bar( id_count_df, x='ID_count', y='Dose', color='Gender', orientation='h',title = default_plot_title)
             fig.update_layout(xaxis_title=default_xlabel, yaxis_title=default_ylabel, legend_title_text='Gender')
+            config = {
+            'toImageButtonOptions': {
+            'format': 'png', 
+            'filename': 'ID_counts_by_Dose_Gender',
+            'height': None,
+            'width': None,
+            'scale': 5  }}
             plot = st.plotly_chart(fig, use_container_width=True)
 
             # Plot characteristic
@@ -189,7 +213,7 @@ with visualization:
                 ylabel = st.text_input('Edit y label:',value = 'Dose')
             
             fig.update_layout(title=plot_title, xaxis_title=xlabel, yaxis_title=ylabel)
-            plot.plotly_chart(fig, use_container_width=True)
+            plot.plotly_chart(fig, use_container_width=True,config=config)
       
       with col2: 
           # plot the summary of Age
@@ -214,19 +238,25 @@ with visualization:
       
       if dose_profile:
         st.title('PK Profile by Dose')
-        
         col1, col2 = st.columns(2)
         unique_doses = edited_extract_df['Dose'].unique()
         for i, dose in enumerate(unique_doses):
             dose_specific_df = edited_extract_df[edited_extract_df['Dose']==dose]
             fig = px.scatter(dose_specific_df, x='Time', y='Conc', title=f'Dose: {dose}')
+            config_dose_profile = {
+            'toImageButtonOptions': {
+            'format': 'png', 
+            'filename': f'PK_dose_{dose}',
+            'height': None,
+            'width': None,
+            'scale': 5 }}
             # Plot on 2-column page layout
             if i % 2 == 0:
                 with col1:
-                    st.plotly_chart(fig)
+                    st.plotly_chart(fig,config = config_dose_profile)
             else:
                 with col2:
-                    st.plotly_chart(fig)
+                    st.plotly_chart(fig,config = config_dose_profile)
     
     else:
         st.info('You should upload the file first')
@@ -338,7 +368,14 @@ with non_compartment:
         fig.update_layout(title=f'ID {id}', xaxis_title='Time', yaxis_title='Log Concentration')
     
         # Display the figure
-        st.plotly_chart(fig)
+        config_nca = {
+        'toImageButtonOptions': {
+        'format': 'png', 
+        'filename': 'nca_analysis',
+        'height': None,
+        'width': None,
+        'scale': 5 }}
+        st.plotly_chart(fig,config = config_nca)
 
     # Tab information
     st.header('Non-Compartmental Analysis')
