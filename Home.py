@@ -14,9 +14,9 @@ st.write("""PKPD SiAn Tools - PKPD Simulation and Analysis Tools 1.3.0 is the we
 
 This application helps students and researchers to simulate and analyze different scenarios in clinical trials. The simulation uses a one-compartmental model and the analysis can be conducted based on both non-compartment and one-compartment models. The underlying mechanism of the simulation and analysis is in the *❓Helps* page. You can click the button below to see the mechanism.""")
 st.link_button("❓Helps", "https://pkpd-sian-tools.streamlit.app/Helps")
-st.write("""In version 1.3.0, the 💊 Combine Dosing Regimen page has been transformed into 💊 Multiple Dose PK Simulation, giving users the freedom to define the dosing regimen, including dose amount, starting time point, and infusion duration.
+st.write("""In version 1.3.1, all error messages were written as clear instructions so that users can easily fix simulation errors.
          
-The ongoing 1.4.0 version will be updated soon, which incorporates two new features, including automatical data cleaning tools, which help draw several error warnings for the imported data and One-compartmental Analysis for multiple dosing regimen.""")
+The ongoing 1.4.0 version will be updated soon, which incorporates two new features, including automatical data cleaning tools, which helps draw several error warnings for the imported data and One-compartmental Analysis for multiple dosing regimen.""")
 
 # Sidebar options
 st.sidebar.success('Select a page above')
@@ -42,9 +42,6 @@ if update_history:
 - **Version 1.2.1:** The PK analysis provided the user with the demo datasets, which can be used as the application trial.
 
 - **Version 1.3.0:** The 💊 Combine Dosing Regimen page has been transformed into 💊 Multiple Dose PK Simulation, giving users the freedom to define the dosing regimen, including dose amount, starting time point, and infusion duration. ''')
-
-
-
 
 
 
