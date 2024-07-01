@@ -41,7 +41,9 @@ if update_history:
 
 - **Version 1.2.1:** The PK analysis provided the user with the demo datasets, which can be used as the application trial.
 
-- **Version 1.3.0:** The 💊 Combine Dosing Regimen page has been transformed into 💊 Multiple Dose PK Simulation, giving users the freedom to define the dosing regimen, including dose amount, starting time point, and infusion duration. ''')
+- **Version 1.3.0:** The 💊 Combine Dosing Regimen page has been transformed into 💊 Multiple Dose PK Simulation, giving users the freedom to define the dosing regimen, including dose amount, starting time point, and infusion duration. 
+             
+- **Version 1.3.1:** All error messages were written as clear instructions so that users can easily fix simulation errors.''')
 
 
 
