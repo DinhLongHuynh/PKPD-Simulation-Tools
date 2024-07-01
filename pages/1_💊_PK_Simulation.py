@@ -6,41 +6,43 @@ import plotly.graph_objects as go
 from scipy.stats import norm
 
 # Define function for the simulation
-def pk_simulation(dose=100, CL_pop=2, V_pop=50, ka_pop=None, F_pop=1, n_patients=1, sig_resid = 0, omegaCL=0, omegaV=0, omegaka=0, omegaF=0, 
-                  C_limit=None, sampling_points=24, logit=False):
-    sampling_points = np.linspace(0,sampling_points,1000)
+def pk_simulation(parameters): 
+    sampling_points = np.arange(0,parameters['sampling_points']+0.1,0.1)
     time = np.array(sampling_points).reshape(1, len(sampling_points))
-    CV_V = norm.rvs(loc=0, scale=omegaV, size=n_patients)
-    V_variability = V_pop * np.exp(CV_V)
-    V_var = V_variability.reshape(n_patients, 1)
-    CV_CL = norm.rvs(loc=0, scale=omegaCL, size=n_patients)
-    CL_variability = CL_pop * np.exp(CV_CL)
-    CL_var = CL_variability.reshape(n_patients, 1)
-    CV_F = norm.rvs(loc=0, scale=omegaF, size=n_patients)
-    F_variability = F_pop * np.exp(CV_F)
-    F_var = F_variability.reshape(n_patients, 1)
+    CV_V = norm.rvs(loc=0, scale=parameters['Omega V'], size=parameters['Number of Patients'])
+    V_variability = parameters['Population Volume of Distribution'] * np.exp(CV_V)
+    V_var = V_variability.reshape(parameters['Number of Patients'], 1)
+    CV_CL = norm.rvs(loc=0, scale=parameters['Omega CL'], size=parameters['Number of Patients'])
+    CL_variability = parameters['Population Clearance'] * np.exp(CV_CL)
+    CL_var = CL_variability.reshape(parameters['Number of Patients'], 1)
+    CV_F = norm.rvs(loc=0, scale=parameters['Omega F'], size=parameters['Number of Patients'])
+    F_variability = parameters['Population Bioavailability'] * np.exp(CV_F)
+    F_var = F_variability.reshape(parameters['Number of Patients'], 1)
     ke_var = CL_var / V_var
-    CV_resid = norm.rvs(loc=0, scale=sig_resid, size=n_patients)
-    resid_var = np.array(CV_resid).reshape(n_patients, 1)
+    CV_resid = norm.rvs(loc=0, scale=parameters['Sigma Residual'], size=parameters['Number of Patients'])
+    resid_var = np.array(CV_resid).reshape(parameters['Number of Patients'], 1)
 
 
     if ka_pop is None:
-        concentration = ((dose * F_var / V_var) * np.exp(np.dot(-ke_var, time)))+resid_var
+        concentration = ((parameters['Dose'] * F_var / V_var) * np.exp(np.dot(-ke_var, time)))+resid_var
     else:
-        CV_ka = norm.rvs(loc=0, scale=omegaka, size=n_patients)
-        ka_variability = ka_pop * np.exp(CV_ka)
-        ka_var = ka_variability.reshape(n_patients, 1)
-        concentration = ((dose * F_var * ka_var) / (V_var * (ka_var - ke_var)) * (np.exp(np.dot(-ke_var, time)) - np.exp(np.dot(-ka_var, time))))+resid_var
+        CV_ka = norm.rvs(loc=0, scale=omegaka, size=parameters['Number of Patients'])
+        ka_variability = parameters['Population ka'] * np.exp(CV_ka)
+        ka_var = ka_variability.reshape(parameters['Number of Patients'], 1)
+        concentration = ((parameters['Dose'] * F_var * ka_var) / (V_var * (ka_var - ke_var)) * (np.exp(np.dot(-ke_var, time)) - np.exp(np.dot(-ka_var, time))))+resid_var
 
-    df_C = pd.DataFrame(concentration, columns=sampling_points)
+    global df_C, df_C_ln
+    df_C = pd.DataFrame(concentration, columns=np.round(sampling_points,1))
     df_C.replace([np.inf, -np.inf], np.nan, inplace=True)
     concentration_ln = np.log(concentration)
-    df_C_ln = pd.DataFrame(concentration_ln, columns=sampling_points)
+    df_C_ln = pd.DataFrame(concentration_ln, columns=np.round(sampling_points,1))
     df_C_ln.replace([np.inf, -np.inf], np.nan, inplace=True)
+    
+
 
     fig = go.Figure()
-    for i in range(n_patients):
-        if logit:
+    for i in range(parameters['Number of Patients']):
+        if parameters['logit']:
             pk_data = df_C_ln.iloc[i, :]
             fig.add_trace(go.Scatter(x=sampling_points, y=pk_data, mode='lines',showlegend=False))
             fig.update_yaxes(title_text='Log[Concentration] (mg/L)')
@@ -50,7 +52,7 @@ def pk_simulation(dose=100, CL_pop=2, V_pop=50, ka_pop=None, F_pop=1, n_patients
             pk_data = df_C.iloc[i, :]
             fig.add_trace(go.Scatter(x=sampling_points, y=pk_data, mode='lines',showlegend=False))
             fig.update_yaxes(title_text='Concentration (mg/L)')
-            if C_limit is not None:
+            if parameters['C Limit'] is not None:
                 fig.add_hline(y=C_limit, line_dash="dash", line_color="red")
     fig.update_xaxes(title_text='Time (h)')
     fig.update_layout(title='PK simulation')
@@ -96,6 +98,37 @@ C_limit = st.number_input("C Limit (mg/L)", value=None,format="%.3f")
 sampling_points = st.number_input("Time range (h)", value=24)
 logit = st.toggle("Log Transformation", value=False)
 
+parameters = {'Dose': dose,
+              'Population Clearance': CL_pop,
+              'Population Volume of Distribution': V_pop,
+              'Population ka': ka_pop,
+              'Population Bioavailability': F_pop,
+              'Number of Patients': n_patients,
+              'Omega CL': omegaCL,
+              'Omega V': omegaV,
+              'Omega ka': omegaka,
+              'Omega F': omegaF,
+              'Sigma Residual': sig_resid,
+              'C Limit':C_limit,
+              'sampling_points': sampling_points,
+              'logit':logit}
+
 # Simulate the PK profile 
+warning_values = []
 if st.button("Run Simulation"):
-    pk_simulation(dose, CL_pop, V_pop, ka_pop, F_pop, n_patients, sig_resid, omegaCL, omegaV, omegaka, omegaF, C_limit, sampling_points, logit)
+    for name, value in parameters.items():
+        if value is None: 
+            continue
+        elif value < 0: 
+            warning_values.append(name)
+    
+    if len(warning_values) == 0:
+        pk_simulation(parameters)
+        st.subheader('Simulation Data')
+        if parameters['logit']:
+            st.data_editor(df_C_ln)
+        else:
+            st.data_editor(df_C)
+    else: 
+        st.error(f'**Parameter Mismatch:** {", ".join(warning_values)} is/are below 0. All defined parameters must be higher than 0.')
+    

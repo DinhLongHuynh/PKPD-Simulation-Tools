@@ -3,9 +3,9 @@ import pandas as pd
 
 st.set_page_config(page_title='Helps', page_icon='❓', layout="wide", initial_sidebar_state="auto", menu_items=None)
 st.title('❓ Helps')
-st.write('''This page further interprets the parameters, variables, and algorithms used in the different simulation/analysis applications.
+st.write('''This page interprets the parameters, variables, and algorithms used in the simulation/analysis applications.
 
-The application provides the common standard units used in clinical trials, i.e. hour for time, mg for dose, mg/L for concentration. However, the units can be flexible depending on the users' case. In this scenario, users should keep in mind the units when interpreting the simulation and analysis results.''')
+The application provides the common standard units used in clinical trials, i.e. hour for time, mg for dose, mg/L for concentration. However, the units can be flexible depending on the users' case. In that scenario, users should keep in mind the units when interpreting the simulation and analysis results.''')
 
 st.write("\n")
 st.markdown(
