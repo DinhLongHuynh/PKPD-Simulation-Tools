@@ -9,8 +9,8 @@ from scipy.stats import norm
 st.set_page_config(page_title='PKPD SiAn Tools', page_icon='💊', layout="wide", initial_sidebar_state="auto", menu_items=None)
 st.sidebar.title('HOME')
 st.title('💊 PKPD SiAn Tools')
-st.caption('Version 1.3.0')
-st.write("""PKPD SiAn Tools - PKPD Simulation and Analysis Tools 1.3.0 is the web application developed by Dinh Long Huynh, a current Master's Student at Uppsala University, Sweden.
+st.caption('Version 1.3.1')
+st.write("""PKPD SiAn Tools - PKPD Simulation and Analysis Tools 1.3.1 is the web application developed by Dinh Long Huynh, a current Master's Student at Uppsala University, Sweden.
 
 This application helps students and researchers to simulate and analyze different scenarios in clinical trials. The simulation uses a one-compartmental model and the analysis can be conducted based on both non-compartment and one-compartment models. The underlying mechanism of the simulation and analysis is in the *❓Helps* page. You can click the button below to see the mechanism.""")
 st.link_button("❓Helps", "https://pkpd-sian-tools.streamlit.app/Helps")
