@@ -1,9 +1,7 @@
 import streamlit as st
-from chatbox import chatbox
 
 st.set_page_config(page_title='Contact', page_icon='📞', layout="wide", initial_sidebar_state="auto", menu_items=None)
 st.title('📞 Contact Information')
-chatbox()
 
 # Contact Information
 st.write("**Mr.** Dinh Long Huynh - Master's Student at Uppsala University")
