@@ -3,23 +3,27 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from scipy.stats import norm
+from chatbox import chatbox
 
 
 # Define the layout of the app
 st.set_page_config(page_title='PKPD SiAn Tools', page_icon='💊', layout="wide", initial_sidebar_state="auto", menu_items=None)
 st.sidebar.title('HOME')
+
+# App introduction
 st.title('💊 PKPD SiAn Tools')
-st.caption('Version 1.3.1')
-st.write("""PKPD SiAn Tools - PKPD Simulation and Analysis Tools 1.3.1 is the web application developed by Dinh Long Huynh, a current Master's Student at Uppsala University, Sweden.
+st.caption('Version 1.4.0')
+st.write("""PKPD SiAn Tools - PKPD Simulation and Analysis Tools 1.4.0 is the web application developed by Dinh Long Huynh, a current Master's Student at Uppsala University, Sweden.
 
 This application helps students and researchers to simulate and analyze different scenarios in clinical trials. The simulation uses a one-compartmental model and the analysis can be conducted based on both non-compartment and one-compartment models. The underlying mechanism of the simulation and analysis is in the *❓Helps* page. You can click the button below to see the mechanism.""")
 st.link_button("❓Helps", "https://pkpd-sian-tools.streamlit.app/Helps")
-st.write("""In version 1.3.1, all error messages were written as clear instructions so that users can easily fix simulation errors.
+st.write("""In version 1.4.0, **Multiple Compartmental Model** is included, which allows to simulate more complex scenarios with consideration of one or more peripheral compartments.
          
-The ongoing 1.4.0 version will be updated soon, which incorporates two new features, including automatical data cleaning tools, which helps draw several error warnings for the imported data and One-compartmental Analysis for multiple dosing regimen.""")
+The ongoing 1.5.0 version will be updated soon, which incorporates two new features, including automatical data cleaning tools, which helps draw several error warnings for the imported data and One-compartmental Analysis for multiple dosing regimen.""")
+           
+
 
 # Sidebar options
-st.sidebar.success('Select a page above')
 update_history = st.sidebar.checkbox('Check Update History',value=False)
 st.write('\n')
 st.write('\n')
@@ -43,9 +47,8 @@ if update_history:
 
 - **Version 1.3.0:** The 💊 Combine Dosing Regimen page has been transformed into 💊 Multiple Dose PK Simulation, giving users the freedom to define the dosing regimen, including dose amount, starting time point, and infusion duration. 
              
-- **Version 1.3.1:** All error messages were written as clear instructions so that users can easily fix simulation errors.''')
-
-
-
+- **Version 1.3.1:** All error messages were written as clear instructions so that users can easily fix simulation errors.
+             
+- **Version 1.4.0:** Multiple Compartmental Model is included, which allows to simulate more complex scenarios with consideration of one or more peripheral compartments.''')
 
 
