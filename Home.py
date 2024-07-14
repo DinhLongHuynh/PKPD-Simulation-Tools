@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from scipy.stats import norm
-from chatbox import chatbox
 
 
 # Define the layout of the app
