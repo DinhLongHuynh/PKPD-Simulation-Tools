@@ -1,11 +1,13 @@
 import streamlit as st
 import pandas as pd
 
+
 st.set_page_config(page_title='Helps', page_icon='❓', layout="wide", initial_sidebar_state="auto", menu_items=None)
 st.title('❓ Helps')
 st.write('''This page interprets the parameters, variables, and algorithms used in the simulation/analysis applications.
 
 The application provides the common standard units used in clinical trials, i.e. hour for time, mg for dose, mg/L for concentration. However, the units can be flexible depending on the users' case. In that scenario, users should keep in mind the units when interpreting the simulation and analysis results.''')
+
 
 st.write("\n")
 st.markdown(
@@ -35,6 +37,11 @@ st.write("- **Omega:**: The data type is **float**. Each PK parameter has its co
 st.latex(r'Parameter_{i} = Parameter_{population} \times e^{n_{i}}')
 st.write("- **Sigma Residual**: The data type is **float**. This is the standard deviation of the residual distribution. From this distribution, a sample with a specific size, which is the number of patients, is picked and each residual value will be added to the final concentration with the following formula:")
 st.latex(r'Concentration_{i,final} = Concentration_{i} + Residual_{i}')
+st.write("\n")
+st.subheader('Peripheral Compartments Parameters')
+st.write('- **Initial Drug Concentration:** The data type is **float**. This is the existed concentration in the peripheral compartment at the time of drug administration.')
+st.write('- **k_in:** The data type is **float**. This is the absorption rate constant of drug from the central compartment to the peripheral compartment.')
+st.write('- **k_out:** The data type is **float**. This is the elimination rate constant of drug from the peripheral compartment to the central compartment.')
 
 st.write("\n")
 st.markdown(
@@ -185,3 +192,4 @@ st.write('- **AUC_0-inf** _ generated parameter: The AUC from time point 0 to th
 st.latex(r'\text{AUC}_{0-\infty} = \int_{0}^{\infty} \frac{F \times \text{Dose} \times k_a}{V_d \times (k_a - k_e)} \times \left( e^{-k_e \times t} - e^{-k_a \times t} \right) \, dt')
 st.write('- **Clearance** _ generated parameter: This is the total clearance of drug. It has the unit of volume divided by time, therefore the unit depends on the concentration and time unit used in the analysis. Clearance is calculated from Dose and AUC_0-inf.')
 st.latex(r'CL = \frac{\text{Dose}}{AUC_{0-inf}}')
+
