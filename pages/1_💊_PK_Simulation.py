@@ -84,7 +84,7 @@ The model includes one central compartment responsible for drug absorption and e
 
 The model also includes one or more peripheral compartments directly connect to the central one. Each peripheral compartment is characterized by its Initial Drug Concentration, k_in, and k_out.''')
     
-    st.image('/Users/lod/Desktop/Projects/PKPD_Simulation_App/images/Multiple_Compartmental_Model.png')
+    st.image('/mount/src/pkpd-simulation-tools/images/Multiple_Compartmental_Model.png')
     
     # Initialize session state
     if 'parameters' not in st.session_state:
