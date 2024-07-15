@@ -1,30 +1,15 @@
 import streamlit as st
 import numpy as np
 import plotly.graph_objects as go
+from pkpd_sian.simulation import pk_iv_dose, pk_prolonged_iv_dose, pk_non_iv_dose
+
 
 # Define function for the single dose simulation
-def pk_iv_dose(dose, time, ke, Vd):
-    concentration = (dose/Vd) * (np.exp(-ke * time))
-    return concentration
 
-def pk_prolonged_iv_dose(dose, time, ke, Vd, infusion_duration):
-    concentration = []
-    for time_point in time:
-        if time_point <= infusion_duration:
-            # During infusion
-            concentration.append((dose / (Vd * infusion_duration * ke)) * (1 - np.exp(-ke * time_point)))
-        else:
-            # After infusion
-            concentration.append((dose / (Vd * infusion_duration * ke)) * (1 - np.exp(-ke * infusion_duration)) * np.exp(-ke * (time_point - infusion_duration)))
-    return np.array(concentration)
-
-def pk_non_iv_dose(dose, F, time, ke, ka, Vd):
-    concentration = ((dose * F*ka)/(Vd*(ka-ke)))*(np.exp(-ke*time)-np.exp(-ka*time))
-    return concentration
 
 
 # Page setup
-st.set_page_config(page_title='Multiple Dose PK', page_icon='💊', layout="wide", initial_sidebar_state="auto", menu_items=None)
+st.set_page_config(page_title='Multiple Dose PK Simulation', page_icon='💊', layout="wide", initial_sidebar_state="auto", menu_items=None)
 st.title("💊 Multiple Dose PK Simulation")
 st.write("""This page helps to visualize the drug's PK profile of the multiple-dosing regimen, using the one-compartmental model.
 
@@ -150,6 +135,4 @@ if run_simulation:
 
     st.plotly_chart(fig, config = config)
         
-        
-
         

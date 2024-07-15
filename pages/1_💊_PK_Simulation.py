@@ -1,156 +1,9 @@
 # Import modules/packages
 import numpy as np
-from scipy.integrate import odeint
 import plotly.graph_objects as go
 import streamlit as st
 import pandas as pd
-from scipy.stats import norm
-
-
-# Define function for the simulation
-def one_compartment_simulation(parameters): 
-    sampling_points = np.arange(0,parameters['sampling_points']+0.1,0.1)
-    time = np.array(sampling_points).reshape(1, len(sampling_points))
-    CV_V = norm.rvs(loc=0, scale=parameters['Omega V'], size=parameters['Number of Patients'])
-    V_variability = parameters['Population Volume of Distribution'] * np.exp(CV_V)
-    V_var = V_variability.reshape(parameters['Number of Patients'], 1)
-    CV_CL = norm.rvs(loc=0, scale=parameters['Omega CL'], size=parameters['Number of Patients'])
-    CL_variability = parameters['Population Clearance'] * np.exp(CV_CL)
-    CL_var = CL_variability.reshape(parameters['Number of Patients'], 1)
-    CV_F = norm.rvs(loc=0, scale=parameters['Omega F'], size=parameters['Number of Patients'])
-    F_variability = parameters['Population Bioavailability'] * np.exp(CV_F)
-    F_var = F_variability.reshape(parameters['Number of Patients'], 1)
-    ke_var = CL_var / V_var
-    CV_resid = norm.rvs(loc=0, scale=parameters['Sigma Residual'], size=parameters['Number of Patients'])
-    resid_var = np.array(CV_resid).reshape(parameters['Number of Patients'], 1)
-
-
-    if ka_pop is None:
-        concentration = ((parameters['Dose'] * F_var / V_var) * np.exp(np.dot(-ke_var, time)))+resid_var
-    else:
-        CV_ka = norm.rvs(loc=0, scale=omegaka, size=parameters['Number of Patients'])
-        ka_variability = parameters['Population ka'] * np.exp(CV_ka)
-        ka_var = ka_variability.reshape(parameters['Number of Patients'], 1)
-        concentration = ((parameters['Dose'] * F_var * ka_var) / (V_var * (ka_var - ke_var)) * (np.exp(np.dot(-ke_var, time)) - np.exp(np.dot(-ka_var, time))))+resid_var
-
-    global df_C, df_C_ln
-    df_C = pd.DataFrame(concentration, columns=np.round(sampling_points,1))
-    df_C.replace([np.inf, -np.inf], np.nan, inplace=True)
-    concentration_ln = np.log(concentration)
-    df_C_ln = pd.DataFrame(concentration_ln, columns=np.round(sampling_points,1))
-    df_C_ln.replace([np.inf, -np.inf], np.nan, inplace=True)
-    
-
-
-    fig = go.Figure()
-    for i in range(parameters['Number of Patients']):
-        if parameters['logit']:
-            pk_data = df_C_ln.iloc[i, :]
-            fig.add_trace(go.Scatter(x=sampling_points, y=pk_data, mode='lines',showlegend=False))
-            fig.update_yaxes(title_text='Log[Concentration] (mg/L)')
-            if C_limit is not None:
-                fig.add_hline(y=np.log(C_limit), line_dash="dash", line_color="red")
-        else:
-            pk_data = df_C.iloc[i, :]
-            fig.add_trace(go.Scatter(x=sampling_points, y=pk_data, mode='lines',showlegend=False))
-            fig.update_yaxes(title_text='Concentration (mg/L)')
-            if parameters['C Limit'] is not None:
-                fig.add_hline(y=C_limit, line_dash="dash", line_color="red")
-    fig.update_xaxes(title_text='Time (h)')
-    fig.update_layout(title='PK simulation')
-
-    config = {
-    'toImageButtonOptions': {
-        'format': 'png', 
-        'filename': 'PK_simulation',
-        'height': None,
-        'width': None,
-        'scale': 5
-    }}
-    st.plotly_chart(fig,config=config)
-
-
-
-def multiple_compartment_simulation(parameters,time,Dose,conc_limit,iv=False):
-    def genral_model(concentrations, t):
-        dCdt_dict = {}
-        if iv:
-            # Compartment 0
-            dCdt_dict['dC0dt'] = Dose/V_central
-            # Compartment 1
-            dCdt_dict['dC1dt'] = (- parameters['Compartment 1']['k_out'] * concentrations[1] 
-                          + sum(parameters['Compartment '+str(i)]['k_out']*concentrations[i] - parameters['Compartment '+str(i)]['k_in']*concentrations[1] for i in range(2, len(parameters))))
-            # Other compartments
-            for i in range(2, len(parameters)):
-                dCdt_dict['dC'+str(i)+'dt'] = (parameters['Compartment '+str(i)]['k_in'] * concentrations[1] 
-                                       - parameters['Compartment '+str(i)]['k_out'] * concentrations[i])
-
-        else:
-            # Compartment 0
-            dCdt_dict['dC0dt'] = -parameters['Compartment 0']['k_out'] * concentrations[0]
-            # Compartment 1
-            dCdt_dict['dC1dt'] = (parameters['Compartment 0']['k_out'] * concentrations[0] 
-                          - parameters['Compartment 1']['k_out'] * concentrations[1] 
-                          + sum(parameters['Compartment '+str(i)]['k_out']*concentrations[i] - parameters['Compartment '+str(i)]['k_in']*concentrations[1] for i in range(2, len(parameters))))
-            # Other compartments
-            for i in range(2, len(parameters)):
-                dCdt_dict['dC'+str(i)+'dt'] = (parameters['Compartment '+str(i)]['k_in'] * concentrations[1] 
-                                       - parameters['Compartment '+str(i)]['k_out'] * concentrations[i])
-    
-        return [dCdt_dict['dC'+str(i)+'dt'] for i in range(len(dCdt_dict))]
-
-    # Initialize 
-    if iv: 
-        parameters['Compartment 1']['C0']= Dose/V_central
-            
-    concentrations_initial = [param['C0'] for param in parameters.values()]
-
-    # Solve
-    solution = odeint(genral_model, concentrations_initial, time)
-
-    # Extract concentrations
-    results = {f'C{i}': solution[:, i] for i in range(len(parameters))}
-
-    # Draw the graph
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(
-        x=time,
-        y=results['C1'],
-        mode='lines',
-        name='Central Compartment'))
-
-    for i in range(2, len(parameters)): 
-            fig.add_trace(go.Scatter(
-            x=time,
-            y=results['C'+str(i)],
-            mode='lines',
-            name=f'Compartment {i}',
-            line=dict(dash='dash')
-        ))
-    
-    if conc_limit is not None: 
-        fig.add_hline(y=conc_limit, line_dash="dash", line_color="red")
-
-
-    fig.update_layout(
-        title='Multiple Compartmental Pharmacokinetic Simulation',
-        xaxis_title='Time (hours)',
-        yaxis_title='Concentration (mg/L)',
-)
-
-    config = {
-    'toImageButtonOptions': {
-        'format': 'png', 
-        'filename': 'PK_simulation',
-        'height': None,
-        'width': None,
-        'scale': 5
-    }}
-    st.plotly_chart(fig,config=config)
-
-    return results
-
-
+from pkpd_sian.simulation import one_compartment_simulation, multiple_compartment_simulation
 
 
 #Page setup
@@ -212,7 +65,7 @@ It also takes the omega arguments as the standard deviation of the population di
                 warning_values.append(name)
     
         if len(warning_values) == 0:
-            one_compartment_simulation(parameters)
+            df_C, df_C_ln = one_compartment_simulation(parameters)
             st.subheader('Simulation Data')
             if parameters['logit']:
                 st.data_editor(df_C_ln)
@@ -224,13 +77,22 @@ It also takes the omega arguments as the standard deviation of the population di
 
 
 with multiple_compartment: 
+    # Tab information
     st.write('''This page helps to simulate PK profile of a single dose using multiple compartmental model. The graphical representation of the model is describes by the figure below.
              
 The model includes one central compartment responsible for drug absorption and elimination. Various parameters for this compartment include Absorption Rate Constant, Elimination Rate Constant, and Volume of Distribution.
 
 The model also includes one or more peripheral compartments directly connect to the central one. Each peripheral compartment is characterized by its Initial Drug Concentration, k_in, and k_out.''')
     
-    st.image('/mount/src/pkpd-simulation-tools/images/Multiple_Compartmental_Model.png')
+    st.image('/Users/lod/Desktop/Projects/PKPD_Simulation_App/images/Multiple_Compartmental_Model.png')
+    
+    # Initialize session state
+    if 'parameters' not in st.session_state:
+        st.session_state.parameters = {}
+    if 'compartment_count' not in st.session_state:
+        st.session_state.compartment_count = 2  # Start from Compartment 2
+
+    # Input for central Compartment
     st.subheader('Central Compartment')
     col1, col2 = st.columns(2)
     with col1: 
@@ -244,21 +106,14 @@ The model also includes one or more peripheral compartments directly connect to 
         V_central = st.number_input("Volume of Distribution (L)",value = 33.0,format="%.3f")
     
     time = np.arange(0,simulation_range+0.1,0.1)
-    
-    # Initialize session state
-    if 'parameters' not in st.session_state:
-        st.session_state.parameters = {}
-    if 'compartment_count' not in st.session_state:
-        st.session_state.compartment_count = 2  # Start from Compartment 2
-
-    st.write("\n")
-    st.write("\n")
-    st.write("\n")
-    st.subheader('Peripheral Compartments')
-    # Assign central compartment information
     st.session_state.parameters['Compartment 0'] = {'C0': Dose/V_central, 'k_in': None, 'k_out': ka, 'V': V_central}
     st.session_state.parameters['Compartment 1'] = {'C0': 0, 'k_in': ka, 'k_out': ke, 'V': V_central}
+    st.write("\n")
+    st.write("\n")
+    st.write("\n")
 
+    # Input for Peripheral Compartment
+    st.subheader('Peripheral Compartments')
     add_peripheral = st.button("Add peripheral compartment")
         
     # Take input from users

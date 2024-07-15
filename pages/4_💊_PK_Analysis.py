@@ -2,19 +2,14 @@
 import streamlit as st
 import pandas as pd 
 import numpy as np
-import plotly.graph_objects as go
-import plotly.express as px
-from thefuzz import process
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import r2_score, mean_squared_error
-from scipy.optimize import curve_fit
-from scipy.integrate import quad
+from pkpd_sian.visualization import distribution_plots, id_count_by_dose, pk_profile_by_dose
+from pkpd_sian.analysis import non_compartmental_analysis, non_compartmental_plots, one_compartmental_iv_analysis, one_compartmental_im_analysis
+from pkpd_sian.preprocessing import data_preprocessing
 
 # Page setup
 st.set_page_config(page_title='PK Analysis', page_icon='💊', layout="wide", initial_sidebar_state="auto", menu_items=None)
 st.title("💊 PK Analysis Tools")
 introduction, file_characteristic, visualization, non_compartment, one_compartment = st.tabs(["Introduction",'File Characteristic','Data Visualization',"Non-compartmental Analysis", "One-compartmental Analysis"])
-
 
 
 
@@ -48,15 +43,16 @@ with introduction:
     if uploaded_file is not None:
         file = uploaded_file
     elif iv_drug_file:
-        file = '/mount/src/pkpd-simulation-tools/testdata/Phase_I_iv_drug.csv'
+        file = '/Users/lod/Desktop/Projects/PKPD_Simulation_App/testdata/Phase_I_iv_drug.csv'
     elif im_drug_file:
-        file = '/mount/src/pkpd-simulation-tools/testdata/Phase_I_im_drug.csv'
+        file = '/Users/lod/Desktop/Projects/PKPD_Simulation_App/testdata/Phase_I_im_drug.csv'
 
 # Read and store the data in session state
     if file is not None:
         st.session_state.df = pd.read_csv(file)
         st.success('File importing success')
         st.caption('Next step is characterising the data with File Characteristic tab.')
+
 
 
 
@@ -67,45 +63,9 @@ with file_characteristic:
         st.header("File Characteristic")
         st.caption('Select the column in your file that corresponds to these descriptions.')
 
-    # Use the similarity check to pre-assign mandatory columns
-        default_id_col = process.extract('ID', df.columns, limit=1)[0][0]
-        default_time_col = process.extract('Time', df.columns, limit=1)[0][0]
-        default_conc_col = process.extract('Conc', df.columns, limit=1)[0][0]
-        default_dose_col = process.extract('Dose', df.columns, limit=1)[0][0]
+        extract_df = data_preprocessing(df)
 
-        default_id_index = df.columns.get_loc(default_id_col)
-        default_time_index = df.columns.get_loc(default_time_col)
-        default_conc_index = df.columns.get_loc(default_conc_col)
-        default_dose_index = df.columns.get_loc(default_dose_col)
 
-    # Let user define the columns
-        col1, col2 = st.columns(2)
-        with col1:  # Use pre-assign columns as the default argument
-            st.write('Compulsory Information')
-            ID_col = st.selectbox('Select a column that represent ID', df.columns, index=default_id_index)
-            Time_col = st.selectbox('Select a column that represent Time', df.columns, index=default_time_index)
-            Concentration_col = st.selectbox('Select a column that represent Concentration', df.columns, index=default_conc_index)
-            Dose_col = st.selectbox('Select a column that represent Dose', df.columns, index=default_dose_index)
-        with col2:
-            st.write('Additional Information')
-            Age_col = st.selectbox('Select a column that represent Age', df.columns, index=None)
-            Weight_col = st.selectbox('Select a column that represent Body Weight', df.columns, index=None)
-            Gender_col = st.selectbox('Select a column that represent Gender', df.columns, index=None)
-            CLCR_col = st.selectbox('Select a column that represent Clearance Creatinine', df.columns, index=None)
-
-    # Define the extracted columns from df
-        col_list = [ID_col, Time_col, Concentration_col, Dose_col, Age_col, Weight_col, Gender_col, CLCR_col]
-        col_name = ['ID', 'Time', 'Conc', 'Dose', 'Age', 'Weight', 'Gender', 'CLCR']
-        extracted_col = []
-        extracted_col_name = []
-        for column, column_name in zip(col_list, col_name):
-            if column is not None:
-                extracted_col.append(column)
-                extracted_col_name.append(column_name)
-
-    # Extract df and unify the columns' names
-        extract_df = df[extracted_col]
-        extract_df.columns = extracted_col_name
 
     # Allow the edit from user on the dataframe
         st.subheader('Data Frame')
@@ -121,142 +81,43 @@ with file_characteristic:
 
 
 
-
 with visualization:
-    # Define function used for the visualisation
-    def distribution_plots(data,x,xaxis_title,y_axis_title,header):
-        st.subheader(header)
-        nbins = st.slider(f'Edit the number of bins for {x} distribution:',value = 20)
-        fig = px.histogram(data, x=x,nbins=nbins)
-        fig.update_traces(marker_line_color='black', marker_line_width=1)
-        fig.update_layout(title=header, xaxis_title=xaxis_title, yaxis_title=y_axis_title)
-        config_dis = {
-        'toImageButtonOptions': {
-        'format': 'png', 
-        'filename': f'{x}_distribution',
-        'height': None,
-        'width': None,
-        'scale': 5 }}
-        plot = st.plotly_chart(fig, use_container_width=True, config = config_dis)
-
-    # Body code
     if edited_extract_df is not None:
       # Quick summary
       st.title('Quick Summary')
       col1, col2 = st.columns(2)
       with col1:
         # plot the summary of study arms by Dose
-        if Gender_col is None:
-            # Handling data: 
-            st.subheader('Number of ID by Dose')
-            id_count_df = edited_extract_df.groupby('Dose')['ID'].nunique().reset_index(name='ID_count')
-            id_count_df['Dose'] = 'Dose ' + id_count_df['Dose'].astype(str) # Turn dose into category for better visualization
-
-            # Draw plot
-            default_plot_title = 'Number of ID by Dose'
-            default_xlabel = 'ID Counts'
-            default_ylabel = 'Dose'
-            fig = px.bar(id_count_df, x='ID_count', y='Dose', orientation='h',color = 'Dose', title = default_plot_title ,color_discrete_sequence=px.colors.qualitative.Safe)
-            fig.update_layout(xaxis_title=default_xlabel, yaxis_title=default_ylabel)
-            config = {
-            'toImageButtonOptions': {
-            'format': 'png', 
-            'filename': 'ID_counts_by_Dose',
-            'height': None,
-            'width': None,
-            'scale': 5  }}
-            plot = st.plotly_chart(fig, use_container_width=True,config=config)
-
-            # Plot characteristic
-            plot_title = st.text_input('Edit plot title:',value = 'Number of ID by Dose')
-            
-            col3, col4 = st.columns(2)
-            with col3:
-                xlabel = st.text_input('Edit x label:',value = 'ID Counts')
-            with col4:
-                ylabel = st.text_input('Edit y label:',value = 'Dose')
-            
-            fig.update_layout(title=plot_title, xaxis_title=xlabel, yaxis_title=ylabel)
-
-            plot.plotly_chart(fig, use_container_width=True,config = config)
+        if 'Gender' in edited_extract_df.columns:
+            id_count_by_dose(edited_extract_df,gender=True)
         
-        # plot the summary of study arms by Dose and Gender
         else: 
-            # Hanlding data
-            st.subheader('Number of ID by Dose and Gender')
-            id_count_df = edited_extract_df.groupby(['Dose','Gender'])['ID'].nunique().reset_index(name='ID_count')
-            id_count_df['Dose'] = id_count_df['Dose'].astype(str)+'mg' # Turn dose into category for better visualization
-            id_count_df['Gender'] = id_count_df['Gender'].astype(str)
-
-             # Draw the plot
-            default_plot_title = 'Number of ID by Dose and Gender'
-            default_xlabel = 'ID Counts'
-            default_ylabel = 'Dose'
-            fig = px.bar( id_count_df, x='ID_count', y='Dose', color='Gender', orientation='h',title = default_plot_title)
-            fig.update_layout(xaxis_title=default_xlabel, yaxis_title=default_ylabel, legend_title_text='Gender')
-            config = {
-            'toImageButtonOptions': {
-            'format': 'png', 
-            'filename': 'ID_counts_by_Dose_Gender',
-            'height': None,
-            'width': None,
-            'scale': 5  }}
-            plot = st.plotly_chart(fig, use_container_width=True)
-
-            # Plot characteristic
-            plot_title = st.text_input('Edit plot title:',value = 'Number of ID by Dose and Gender')
+            id_count_by_dose(edited_extract_df,gender=False)
             
-            col3, col4 = st.columns(2)
-            with col3:
-                xlabel = st.text_input('Edit x label:',value = 'ID Counts')
-            with col4:
-                ylabel = st.text_input('Edit y label:',value = 'Dose')
-            
-            fig.update_layout(title=plot_title, xaxis_title=xlabel, yaxis_title=ylabel)
-            plot.plotly_chart(fig, use_container_width=True,config=config)
       
       with col2: 
           # plot the summary of Age
-          if Age_col is not None: 
-              distribution_plots(data=edited_extract_df,x='Age',xaxis_title="Age",y_axis_title='Freq.',header='Age Distribution')
+          if 'Age' in edited_extract_df.columns: 
+              distribution_plots(data=edited_extract_df,x='Age',xlabel="Age",ylabel='Freq.',title='Age Distribution')
         
       col3, col4 = st.columns(2)
       with col3: 
           # plot the summary of Weight
-          if Weight_col is not None: 
-            distribution_plots(data=edited_extract_df,x='Weight',xaxis_title="Weight",y_axis_title='Freq.',header='Weight Distribution')
+          if 'Weight' in edited_extract_df.columns: 
+            distribution_plots(data=edited_extract_df,x='Weight',xlabel="Weight",ylabel='Freq.',title='Weight Distribution')
       
       
       with col4:
           # plot the summary of CLCR
-          if CLCR_col is not None: 
-            distribution_plots(data=edited_extract_df,x='CLCR',xaxis_title="Creatinine Clearance",y_axis_title='Freq.',header='CLCR Distribution')
+          if 'CLCR' in edited_extract_df.columns: 
+            distribution_plots(data=edited_extract_df,x='CLCR',xlabel="Creatinine Clearance",ylabel='Freq.',title='CLCR Distribution')
 
 
       # Display the PK profile by Dose
       dose_profile = st.toggle('Display PK profile by Dose', value = False)
       
       if dose_profile:
-        st.title('PK Profile by Dose')
-        col1, col2 = st.columns(2)
-        unique_doses = edited_extract_df['Dose'].unique()
-        for i, dose in enumerate(unique_doses):
-            dose_specific_df = edited_extract_df[edited_extract_df['Dose']==dose]
-            fig = px.scatter(dose_specific_df, x='Time', y='Conc', title=f'Dose: {dose}')
-            config_dose_profile = {
-            'toImageButtonOptions': {
-            'format': 'png', 
-            'filename': f'PK_dose_{dose}',
-            'height': None,
-            'width': None,
-            'scale': 5 }}
-            # Plot on 2-column page layout
-            if i % 2 == 0:
-                with col1:
-                    st.plotly_chart(fig,config = config_dose_profile)
-            else:
-                with col2:
-                    st.plotly_chart(fig,config = config_dose_profile)
+        pk_profile_by_dose(edited_extract_df)
     
     else:
         st.info('You should upload the file first')
@@ -264,119 +125,7 @@ with visualization:
 
 
 
-
 with non_compartment:
-    # Define functions for the analysis
-    def non_compartmental_analysis(df):
-        # Initialize dataframe
-        data = {
-            'ID': [],
-            'Dose':[],
-            'Slope': [],
-            'Number of Lambda Points': [],
-            'R2 Values': [],
-            'AUC_0-last': [],
-            'AUC_last-inf': [],
-            'AUC_0-inf': [],
-            'Half Life': [],
-            'Apparent Clearance': []
-        }
-        
-        unqualified_id = []
-        for id in df['ID'].unique():
-            df_id = df[df['ID'] == id].dropna()
-            
-            # Skip if less than 3 points 
-            if df_id.shape[0] < 3:
-                unqualified_id.append(id)
-                continue  
-
-            else:
-                # Calculate AUC 0-last
-                auc_0_last = np.trapz(y=df_id['Conc'], x=df_id['Time'])
-            
-                # Find optimal number of lamda points
-                r2_list = []
-                slope_list = []
-                X = df_id[['Time']]
-            
-                for n_points in range(3, df_id.shape[0] + 1):
-                    # Extract df
-                    df_id_point = df_id.iloc[-n_points:, :] 
-                    
-                    #Run regression
-                    X_points = df_id_point[['Time']]
-                    Y_points = np.log(df_id_point['Conc'] + 0.00001).values.reshape(-1, 1)
-                    model = LinearRegression()
-                    model.fit(X_points, Y_points) 
-                    
-                    #Evaluate regression
-                    prediction = model.predict(X_points) 
-                    r2 = r2_score(y_true=Y_points, y_pred=prediction)
-                    r2_list.append(r2)
-                    slope_list.append(model.coef_.item())
-
-            # Skip if r2_list is empty
-                if not r2_list:
-                    continue  
-            
-                else:
-                    # Select optimal lamda poitns and the corresponding slopes
-                    r2_max_index = np.argmax(r2_list)
-                    slope = slope_list[r2_max_index]
-                    
-                    # Determine PK parameters 
-                    auc_last_inf = -df_id['Conc'].iloc[-1] / slope
-                    dose = df_id['Dose'].unique()[0]
-                    auc_0_inf = auc_0_last + auc_last_inf
-                    apparent_CL = dose / auc_0_inf
-                    half_life = -np.log(2)/slope
-
-                # Add to initial dataframe
-                data['ID'].append(id)
-                data['Dose'].append(dose)
-                data['Slope'].append(-slope)
-                data['Number of Lambda Points'].append(r2_max_index + 3)
-                data['R2 Values'].append(r2_list[r2_max_index])
-                data['AUC_0-last'].append(auc_0_last)
-                data['AUC_last-inf'].append(auc_last_inf)
-                data['AUC_0-inf'].append(auc_0_inf)
-                data['Half Life'].append(half_life)
-                data['Apparent Clearance'].append(apparent_CL)
-
-        # Create DataFrame
-        df_analysis = pd.DataFrame(data)
-        return df_analysis, unqualified_id
-
-    def non_compartmental_plots(df_whole_profile,df_lambda_profile):
-        # Create base figure with whole profile
-        fig = px.scatter(df_whole_profile, x='Time', y='log_conc')
-    
-        # Create scatter plot with trendline for lambda points
-        trend_fig = px.scatter(df_lambda_profile, x='Time', y='log_conc', trendline='ols')
-    
-        # Extract the trendline data
-        trendline_data = trend_fig.data[1]  # The trendline is the second trace in the figure
-    
-        # Add lambda profile to the main figure
-        fig.add_trace(go.Scatter(x=df_lambda_profile['Time'], y=df_lambda_profile['log_conc'], mode='markers', marker=dict(color='red'), name='Lambda Points',showlegend=False))
-    
-        # Add the trendline to the main figure
-        fig.add_trace(trendline_data)
-
-        # Modify the axis label
-        fig.update_layout(title=f'ID {id}', xaxis_title='Time', yaxis_title='Log Concentration')
-    
-        # Display the figure
-        config_nca = {
-        'toImageButtonOptions': {
-        'format': 'png', 
-        'filename': 'nca_analysis',
-        'height': None,
-        'width': None,
-        'scale': 5 }}
-        st.plotly_chart(fig,config = config_nca)
-
     # Tab information
     st.header('Non-Compartmental Analysis')
     st.write("Non-compartmental analysis (NCA) is a method used in pharmacokinetics to analyze and interpret drug concentration data without assuming a specific compartmental model for the body's drug distribution and elimination processes. Instead of relying on a predetermined biological model, NCA calculates pharmacokinetic (PK) parameters directly from the observed concentration-time data.")
@@ -409,7 +158,7 @@ with non_compartment:
             
             if plots:
                 col1, col2 = st.columns(2)
-                for id, lambda_points, count in zip(non_compartment_df_final['ID'],non_compartment_df_final['Number of Lambda Points'],range(counts)):
+                for id, lambda_points,count in zip(non_compartment_df_final['ID'],non_compartment_df_final['Number of Lambda Points'],range(counts)):
                     # Extract whole PK profile 
                     df_whole_profile = edited_extract_df[edited_extract_df['ID']==id].dropna()
                     df_whole_profile['log_conc'] = np.log(df_whole_profile['Conc'])
@@ -436,116 +185,6 @@ with non_compartment:
 
 
 with one_compartment:
-    
-    # Define functions for the analysis
-    def iv_analysis_function(df):
-        iv_analysis_results = {'ID': [],
-                               'Dose':[],
-                               'C0': [],
-                               'ke':[],
-                               'R2':[],
-                               'RMSE':[],
-                               'AUC_0-inf':[],
-                               'Half life': [],
-                               'Apparent CL':[],
-                               'Apparent Vd':[]}
-        unqualified_id = []
-        for id in df['ID'].unique():
-            df_id = df[df['ID']==id].dropna()
-            
-            if df_id.shape[0] < 3:
-                unqualified_id.append(id)
-                continue 
-            
-            else:
-                Y = np.log(df_id['Conc']+0.00001).values.reshape(-1, 1)
-                X = df_id['Time'].values.reshape(-1, 1)
-                model = LinearRegression()
-                model.fit(X,Y)
-                prediction = model.predict(X)
-
-                # Store the primary data
-                iv_analysis_results['ID'].append(id)
-                iv_analysis_results['R2'].append(r2_score(y_true=Y, y_pred=prediction))
-                iv_analysis_results['RMSE'].append(mean_squared_error(y_true=Y, y_pred=prediction, squared=False))
-                iv_analysis_results['ke'].append(-model.coef_.item())
-                iv_analysis_results['C0'].append(np.exp(model.intercept_.item()))
-                iv_analysis_results['Dose'].append(df_id['Dose'].unique()[0])
-                iv_analysis_results['Apparent Vd'].append(df_id['Dose'].unique()[0]/np.exp(model.intercept_.item()))
-                iv_analysis_results['Apparent CL'].append(-model.coef_.item()*df_id['Dose'].unique()[0]/np.exp(model.intercept_.item()))
-                iv_analysis_results['AUC_0-inf'].append(np.exp(model.intercept_.item())/-model.coef_.item())
-                iv_analysis_results['Half life'].append(np.log(2)/-model.coef_.item())
-
-                
-        
-        iv_analysis_df = pd.DataFrame(iv_analysis_results)
-        
-        return iv_analysis_df, unqualified_id
-
-    def im_analysis_function(df, predefined_F, initial_ka, initial_ke, initial_Vd):
-        im_analysis_results = {'ID': [],
-                               'Dose':[],
-                               'ka': [],
-                               'ke':[],
-                               'Vd':[],
-                               'RMSE':[],
-                               'Tmax':[],
-                               'Cmax': [],
-                               'Half life':[],
-                               'AUC_0-inf':[],
-                               'Clearance':[]}
-        
-        unqualified_id = []
-
-        for id in df['ID'].unique():
-            df_id = df[df['ID']==id].dropna()
-            
-            if df_id.shape[0] < 3:
-                unqualified_id.append(id)
-                continue 
-            
-            else:
-                def model(t, ka, ke, V):
-                    F = predefined_F
-                    Dose = df_id['Dose'].unique()[0]
-                    return (F * Dose * ka / (V * (ka - ke))) * (np.exp(-ke * t) - np.exp(-ka * t))
-
-                initial_guesses = [initial_ka, initial_ke, initial_Vd]
-                Y = df_id['Conc'].values
-                X = df_id['Time'].values
-                params, _ = curve_fit(model, X, Y, p0=initial_guesses)
-                ka_est, ke_est, V_est = params
-                
-                prediction = model(X, ka_est, ke_est, V_est)
-                RMSE = mean_squared_error(Y,prediction, squared=False)
-
-                integral, _ = quad(model, 0, np.inf, args=(ka_est, ke_est, V_est))
-
-                # Store the primary data
-                im_analysis_results['ID'].append(id)
-                im_analysis_results['Dose'].append(df_id['Dose'].unique()[0])
-                im_analysis_results['ka'].append(ka_est)
-                im_analysis_results['ke'].append(ke_est)
-                im_analysis_results['Vd'].append(V_est)
-                im_analysis_results['RMSE'].append(RMSE)
-                im_analysis_results['Tmax'].append(np.log(ke_est/ka_est)/(ke_est-ka_est))
-                im_analysis_results['Cmax'].append(model(t =np.log(ke_est/ka_est)/(ke_est-ka_est),ka=ka_est,ke=ke_est,V=V_est))
-                im_analysis_results['AUC_0-inf'].append(integral)
-                im_analysis_results['Clearance'].append(df_id['Dose'].unique()[0]/integral)
-
-                # Elimination limited rate 
-                if ka_est > ke_est:
-                    im_analysis_results['Half life'].append(np.log(2)/ke_est)
-                elif ka_est < ke_est:
-                    im_analysis_results['Half life'].append(np.log(2)/ka_est)
-
-
-                
-        
-        im_analysis_df = pd.DataFrame(im_analysis_results)
-        
-        return im_analysis_df, unqualified_id
-
     # Page information
     st.header('One-Compartmental Analysis')
     st.write('One-compartmental analysis (OCA) is a method used in pharmacokinetics to analyze and interpret drug concentration data by assuming the body behaves as a single, homogeneous compartment. OCA is the model-based method, which uses the data to fit the predefined model or equations.')
@@ -568,7 +207,7 @@ with one_compartment:
         if iv_analysis:
             st.subheader("IV Drug Analysis")
             # Export the analysis resutls
-            iv_analysis_final, unqualified_id = iv_analysis_function(edited_extract_df)
+            iv_analysis_final, unqualified_id = one_compartmental_iv_analysis(edited_extract_df)
             
             # Print warning for unqualified id
             if len(unqualified_id) > 0:
@@ -603,7 +242,7 @@ with one_compartment:
 
             if start: 
                 # Export the analysis resutls
-                im_analysis_final, unqualified_id = im_analysis_function(df=edited_extract_df, predefined_F=predefined_F, initial_ka=initial_ka, initial_ke=initial_ke, initial_Vd=initial_Vd)
+                im_analysis_final, unqualified_id = one_compartmental_im_analysis(df=edited_extract_df, predefined_F=predefined_F, initial_ka=initial_ka, initial_ke=initial_ke, initial_Vd=initial_Vd)
                 
                 # Print warning for unqualified id
                 if len(unqualified_id) > 0:
@@ -623,3 +262,5 @@ with one_compartment:
     
     else:
         st.info('You should upload the file first')
+
+
