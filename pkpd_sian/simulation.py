@@ -91,7 +91,7 @@ def one_compartment_simulation(parameters):
     return df_C, df_C_ln
 
 
-def multiple_compartment_simulation(parameters, time, dose, conc_limit, iv=False):
+def multiple_compartment_simulation(parameters, time, dose,F, iv):
     '''This function helps to visualize pharmacokinetic profile of single dose using multiple-comparmental model.
     
     Parameters: 
@@ -109,80 +109,59 @@ def multiple_compartment_simulation(parameters, time, dose, conc_limit, iv=False
     Returns: 
         results (dict): A dictionary that contains the concentration by time profile for each compartment.
         '''
-    def general_model(concentrations, t):
+    
+
+    # Define the model
+    def general_model_iv(concentrations, t):
         dCdt_dict = {}
-        if iv:
-            # Compartment 0
-            dCdt_dict['dC0dt'] = dose / parameters['Compartment 0']['V']
-            # Compartment 1
-            dCdt_dict['dC1dt'] = (- parameters['Compartment 1']['k_out'] * concentrations[1]
+        # Compartment 0
+        dCdt_dict['dC0dt'] = dose / parameters['Compartment 0']['V']
+        # Compartment 1
+        dCdt_dict['dC1dt'] = (- parameters['Compartment 1']['k_out'] * concentrations[1]
                           + sum(parameters['Compartment ' + str(i)]['k_out'] * concentrations[i] - parameters['Compartment ' + str(i)]['k_in'] * concentrations[1] for i in range(2, len(parameters))))
-            # Other compartments
-            for i in range(2, len(parameters)):
-                dCdt_dict['dC' + str(i) + 'dt'] = (parameters['Compartment ' + str(i)]['k_in'] * concentrations[1]
+        # Other compartments
+        for i in range(2, len(parameters)):
+            dCdt_dict['dC' + str(i) + 'dt'] = (parameters['Compartment ' + str(i)]['k_in'] * concentrations[1]
                                        - parameters['Compartment ' + str(i)]['k_out'] * concentrations[i])
-        else:
-            # Compartment 0
-            dCdt_dict['dC0dt'] = -parameters['Compartment 0']['k_out'] * concentrations[0]
-            # Compartment 1
-            dCdt_dict['dC1dt'] = (parameters['Compartment 0']['k_out'] * concentrations[0]
+        
+
+        return [dCdt_dict['dC' + str(i) + 'dt'] for i in range(len(dCdt_dict))]
+    
+    def general_model_non_iv(concentrations, t):
+        dCdt_dict = {}
+        # Compartment 0
+        dCdt_dict['dC0dt'] = -parameters['Compartment 0']['k_out'] * concentrations[0]
+        # Compartment 1
+        dCdt_dict['dC1dt'] = (parameters['Compartment 0']['k_out'] * concentrations[0]
                           - parameters['Compartment 1']['k_out'] * concentrations[1]
                           + sum(parameters['Compartment ' + str(i)]['k_out'] * concentrations[i] - parameters['Compartment ' + str(i)]['k_in'] * concentrations[1] for i in range(2, len(parameters))))
-            # Other compartments
-            for i in range(2, len(parameters)):
-                dCdt_dict['dC' + str(i) + 'dt'] = (parameters['Compartment ' + str(i)]['k_in'] * concentrations[1]
+        # Other compartments
+        for i in range(2, len(parameters)):
+            dCdt_dict['dC' + str(i) + 'dt'] = (parameters['Compartment ' + str(i)]['k_in'] * concentrations[1]
                                        - parameters['Compartment ' + str(i)]['k_out'] * concentrations[i])
 
         return [dCdt_dict['dC' + str(i) + 'dt'] for i in range(len(dCdt_dict))]
 
-    # Initialize
+
+    # Update C0 for specific dose regiemn
     if iv:
+        parameters['Compartment 0']['C0'] = 0
         parameters['Compartment 1']['C0'] = dose / parameters['Compartment 0']['V']
+    else:
+        parameters['Compartment 0']['C0'] =  F*dose / parameters['Compartment 0']['V']
+        parameters['Compartment 1']['C0'] = 0
+        
     
     concentrations_initial = [param['C0'] for param in parameters.values()]
 
     # Solve
-    solution = odeint(general_model, concentrations_initial, time)
-
+    if iv:
+        solution = odeint(general_model_iv, concentrations_initial, time)
+    else: 
+        solution = odeint(general_model_non_iv, concentrations_initial, time)
+    
     # Extract concentrations
     results = {f'C{i}': solution[:, i] for i in range(len(parameters))}
-
-    # Draw the graph
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(
-        x=time,
-        y=results['C1'],
-        mode='lines',
-        name='Central Compartment'))
-
-    for i in range(2, len(parameters)):
-        fig.add_trace(go.Scatter(
-            x=time,
-            y=results['C' + str(i)],
-            mode='lines',
-            name=f'Compartment {i}',
-            line=dict(dash='dash')
-        ))
-    
-    if conc_limit is not None:
-        fig.add_hline(y=conc_limit, line_dash="dash", line_color="red")
-
-    fig.update_layout(
-        title='Multiple Compartmental Pharmacokinetic Simulation',
-        xaxis_title='Time (hours)',
-        yaxis_title='Concentration (mg/L)',
-    )
-
-    config = {
-        'toImageButtonOptions': {
-            'format': 'png',
-            'filename': 'PK_simulation',
-            'height': None,
-            'width': None,
-            'scale': 5
-        }
-    }
-    st.plotly_chart(fig, config=config)
 
     return results
 
