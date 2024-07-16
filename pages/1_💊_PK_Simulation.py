@@ -6,7 +6,7 @@ from pkpd_sian.simulation import pk_iv_dose, pk_prolonged_iv_dose, pk_non_iv_dos
 
 
 # Page setup
-st.set_page_config(page_title='Multiple Dose PK Simulation', page_icon='💊', layout="wide", initial_sidebar_state="auto", menu_items=None)
+st.set_page_config(page_title='PK Simulation', page_icon='💊', layout="wide", initial_sidebar_state="auto", menu_items=None)
 st.title("💊 PK Simulation")
 one_compartment, multiple_compartment, physiology_compartment = st.tabs(['One Compartmental Simulation','Multiple Compartmental Simulation','Physiology-based Simulation'])
 
@@ -142,7 +142,7 @@ It also enables the define different dosing regimens by the buttons "Add IV Drug
 - **IV drug:**  The drug that is immediately absorped into plasma compartment.
 - **Non-IV drug:** The drug that need time to be absorped into plasma compartment.''')
     
-    st.image('/mount/src/pkpd-simulation-tools/images/Multiple_Compartmental_Model.png')
+    st.image('/Users/lod/Desktop/Projects/PKPD_Simulation_App/images/Multiple_Compartmental_Model.png')
     st.write("\n\n\n")
     
     # Initialize session states to store information

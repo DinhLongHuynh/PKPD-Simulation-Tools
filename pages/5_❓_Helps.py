@@ -21,9 +21,75 @@ st.markdown(
     unsafe_allow_html=True
 )
 st.markdown('<h2 class="centered-text">-------------💊💊💊-------------</h2>', unsafe_allow_html=True)
+st.header('💊 PK Simulation')
+st.write('''In general, there are two types of drugs used for all simulations:
+         
+- **IV drug:** The drug that is immediately absorbed into the central compartment.
+- **Non-IV drug:** The drug that is immediately absorbed into the central compartment.''')
+
+st.subheader('One-Compartmental Simulation')
+st.caption('Further descriptions of the parameters and variables used in the simulation:')
+st.write('- **Absorption Rate Constant (h-1):** The data type is **float**. This is the rate constant that characterizes the absorption, ka. If your dosing regimen has at least 1 non-iv dose, the ka is mandatory. Otherwise, this value can be left as None.')
+st.write('- **Elimination Rate Constant (h-1):** The data type is **float**. This is the rate constant that characterizes the elimination, ke.')
+st.write('- **Volume of Distribution (L):** The data type is **float**. This is the volume of distribution.')
+st.write('- **Simulation Range (h):** The data type is **float**. This is the endpoint of the time range on the simulation plot. For example, if you input 100, the plot will show the simulation within the range between 0 and 100 hour.')
+st.write('- **Start time (h):** The data type is *float*. This is the time point when you start the dose.')
+st.write('- **Dose Amount (mg):** The data type is **float**. This is dose of the drug.')
+st.write('- **Infusion Duration (h):** The data type is **integer**. This is the specific parameter of IV drugs. If the scenario is prolonged infusion drugs, the value of Infusion Duration should be higher than 0 hour. Otherwise, this value can be left as None.')
+st.write('- **Bioavailability:** The data type is **float**. This is the total bioavailability of drugs on a scale from 0 to 1. For example, if the bioavailability is 85%, the input value should be 0.85.')
+st.write('\n')
+st.subheader('Multiple-Compartmental Simulation')
+st.caption('Underlying Mechanism:')
+st.write('This model helps to visualize the PK profile using a multi-compartmental model. The absorption and elimination site is the central compartment, which is also connected to one or more peripheral compartments.')
+st.image('/Users/lod/Desktop/Projects/PKPD_Simulation_App/images/Multiple_Compartmental_Model.png')
+st.write('To characterize the model, a set of derivative equations is used:')
+
+st.write('**For non-iv drug**')
+st.latex(r'\frac{dC_0}{dt} = -k_a C_0')
+st.latex(r'\frac{dC_{\text{central}}}{dt} = k_a C_0 - k_e C_{\text{central}} + \sum_{i=2}^{n_{\text{peripheral}}} \left( k_{\text{out}(i)} C_i - k_{\text{in}(i)} C_{\text{central}} \right)')
+st.latex(r'\frac{dC_{2}}{dt} = -k_{\text{out}(2)} C_2 + k_{\text{in}(2)} C_{\text{central}} ')
+st.latex(r'\frac{dC_{3}}{dt} = -k_{\text{out}(3)} C_3 + k_{\text{in}(2)} C_{\text{central}} ')
+st.latex('...')
+st.latex(r'\frac{dC_{n_{peripheral}}}{dt} = -k_{\text{out}(n_{peripheral})} C_{n_{peripheral}} + k_{\text{in}(n_{peripheral})} C_{\text{central}}')
+st.write('\n')
+st.write('**For iv drug**')
+st.latex(r'\frac{dC_{\text{central}}}{dt} = - k_e C_{\text{central}} + \sum_{i=2}^{n_{\text{peripheral}}} \left( k_{\text{out}(i)} C_i - k_{\text{in}(i)} C_{\text{central}} \right)')
+st.latex(r'\frac{dC_{2}}{dt} = -k_{\text{out}(2)} C_2 + k_{\text{in}(2)} C_{\text{central}} ')
+st.latex(r'\frac{dC_{3}}{dt} = -k_{\text{out}(3)} C_3 + k_{\text{in}(2)} C_{\text{central}} ')
+st.latex('...')
+st.latex(r'\frac{dC_{n_{peripheral}}}{dt} = -k_{\text{out}(n_{peripheral})} C_{n_{peripheral}} + k_{\text{in}(n_{peripheral})} C_{\text{central}} ')
+st.write('\n')
+st.caption('Further descriptions of the parameters and variables used in the simulation:')
+st.write('- **Simulation range (h)**: The data type is **float**. This is the endpoint of the time range on the simulation plot. For example, if you input 100, the plot will show the simulation within the range of 0 and 100 hours.')
+st.write('- **Bioavailability:** The data type is **float**. This is the total bioavailability of drugs. The value is scaled from 0 to 1. For example, if the bioavailability is 85%, the input value should be 0.85.')
+st.write("- **C Limit (mg/L):** The data type is **float**. This is the concentration that you don't want the drug to exceed. The value can be a blank or a float number.")
+st.write('- **Absorption Rate Constant (h-1):** The data type is **float**. This is the rate constant that characterizes the absorption, ka. If your dosing regimen has at least 1 non-iv dose, the ka is mandatory. Otherwise, this value can be left as None.')
+st.write('- **Elimination Rate Constant (h-1):** The data type is **float**. This is the rate constant that characterizes the elimination, ke.')
+st.write('- **Volume of Distribution (L):** The data type is **float**. This is the volume of distribution.')
+st.write('- **Initial Concentration (mg/L)**: The data type is **float** This is the initial concentration of drug in the corresponding peripheral compartment. It was set at 0 by default.')
+st.write('- **k_in (h-1):** The data type is **float**. This is the rate constant that characterizes the absorption of drug from the central compartment to the corresponding peripheral compartment.')
+st.write('- **k_out (h-1):** The data type is **float**. This is the rate constant that characterizes the elimination of drug from the corresponding peripheral compartment to the central compartment.')
+st.write('- **Start time (h):** The data type is *float*. This is the time point when you start the dose.')
+st.write('- **Dose Amount (mg):** The data type is **float**. This is dose of the drug.')
+
+
+
+
+st.write("\n")
+st.markdown(
+    """
+    <style>
+    .centered-text {
+        text-align: center;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+st.markdown('<h2 class="centered-text">-------------💊💊💊-------------</h2>', unsafe_allow_html=True)
 st.write("\n")
 
-st.header('PK Simulation')
+st.header('💊 Population PK Simulation')
 st.caption('Further descriptions of the parameters and variables used in the simulation:')
 st.write('- **Dose (mg):** The data type is **float**. This is the dosage used for simulation.')
 st.write('- **Population Clearance (L/h):** The data type is **float**. This is the mean of clearance among the whole population.')
@@ -37,11 +103,6 @@ st.write("- **Omega:**: The data type is **float**. Each PK parameter has its co
 st.latex(r'Parameter_{i} = Parameter_{population} \times e^{n_{i}}')
 st.write("- **Sigma Residual**: The data type is **float**. This is the standard deviation of the residual distribution. From this distribution, a sample with a specific size, which is the number of patients, is picked and each residual value will be added to the final concentration with the following formula:")
 st.latex(r'Concentration_{i,final} = Concentration_{i} + Residual_{i}')
-st.write("\n")
-st.subheader('Peripheral Compartments Parameters')
-st.write('- **Initial Drug Concentration:** The data type is **float**. This is the existed concentration in the peripheral compartment at the time of drug administration.')
-st.write('- **k_in:** The data type is **float**. This is the absorption rate constant of drug from the central compartment to the peripheral compartment.')
-st.write('- **k_out:** The data type is **float**. This is the elimination rate constant of drug from the peripheral compartment to the central compartment.')
 
 st.write("\n")
 st.markdown(
@@ -57,7 +118,7 @@ st.markdown(
 st.markdown('<h2 class="centered-text">-------------💊💊💊-------------</h2>', unsafe_allow_html=True)
 st.write("\n")
 
-st.header('PD Simulation')
+st.header('💊 Population PD Simulation')
 st.caption('Further descriptions of the parameters and variables used in the simulation:')
 st.write('- **Population Emax:** The data type is **float**. This is the mean of maximum effect among the whole population. The unit of Emax depends on the diseases or biomarkers.')
 st.write('- **Population EC50:** The data type is **float**. This is the mean of half maximal effective concentration among the whole population. The unit of EC50 depends on the concentration of the investigating drugs. For example, if the concentration has a unit of mg/L, the EC50 also has a unit of mg/L.')
@@ -70,30 +131,6 @@ st.write("- **Omega:**: The data type is **float**. Each PD parameter has its co
 st.latex(r'Parameter_{i} = Parameter_{population} \times e^{n_{i}}')
 st.write("- **Sigma Residual**: The data type is **float**. This is the standard deviation of the residual distribution. From this distribution, a sample with specific size, which is the number of patients, is picked and each residual values will be added to the final effect with the following formula:")
 st.latex(r'Effect_{i,final} = Effect_{i} + Residual_{i}')
-
-st.write("\n")
-st.markdown(
-    """
-    <style>
-    .centered-text {
-        text-align: center;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-st.markdown('<h2 class="centered-text">-------------💊💊💊-------------</h2>', unsafe_allow_html=True)
-st.header('Multiple Dose PK Simulation')
-st.caption('Further descriptions of the parameters and variables used in the simulation:')
-st.write('- **Absorption Rate Constant (h-1):** The data type is **float**. This is the rate constant that characterizes the absorption, ka. If your dosing regimen has at least 1 non-iv dose, the ka is mandatory. Otherwise, this value can be left as None.')
-st.write('- **Elimination Rate Constant (h-1):** The data type is **float**. This is the rate constant that charaterizes the elimination, ke.')
-st.write('- **Volume of Distribution (L):** The data type is **float**. This is the volume of distribution.')
-st.write('- **Simulation Range (h):** The data type is **float**. This is the endpoint of the time range on the simulation plot. For example, if you input 100, the plot will show the simulation within the range between 0 and 100 hour.')
-st.write('- **Start time (h):** The data type is *float*. This is the time point when you start the dose.')
-st.write('- **Dose Amount (mg):** The data type is **float**. This is dose of the drug.')
-st.write('- **Infusion Duration (h):** The data type is **integer**. This is the specific parameter of IV drugs. If the scenario is prolonged infusion drugs, the value of Infusion Duration should be higher than 0 hour. Otherwise, this value can be left as None.')
-st.write('- **Bioavailability:** The data type is **float**. This is the total bioavailability of drugs on a scale from 0 to 1. For example, if the bioavailability is 85%, the input value should be 0.85.')
-
 
 
 st.write("\n")
@@ -147,7 +184,7 @@ st.latex(r'CL_{Apparent} = \frac{CL}{F} = \frac{\text{Dose}}{AUC_{0-inf}}')
 st.write('- **Half life**: This is the time it takes for the body to eliminate half of the drug. The half life has the same unit as the time unit used in the analysis.')
 st.latex(r'T_{1/2} = \frac{ln(2)}{slope}')
 
-st.subheader('One-Compartmental Analysis')
+st.subheader('💊 One-Compartmental Analysis')
 st.write('One-compartmental analysis (OCA) is a method used in pharmacokinetics to analyze and interpret drug concentration data by assuming the body behaves as a single, homogeneous compartment. OCA is the model-based method, which uses the data to fit the predefined model or equations.')
 st.write('The important assumption of the analysis in this application is that drug absorption and elimination follow first-order kinetic. There are two scenarios used for analysis, which are IV drug and non-IV drug.')
 st.write("\n")

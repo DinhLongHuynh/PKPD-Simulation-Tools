@@ -4,7 +4,7 @@ from pkpd_sian.simulation import one_compartment_simulation
 
 
 #Page setup
-st.set_page_config(page_title='PK Simulation Tools', page_icon='💊', layout="wide", initial_sidebar_state="auto", menu_items=None)
+st.set_page_config(page_title='Population PK Simulation', page_icon='💊', layout="wide", initial_sidebar_state="auto", menu_items=None)
 st.title("💊 Population PK Simulation")
 
 st.write("""This page helps to visualize the PK profile of the drug, using the one-compartment model.

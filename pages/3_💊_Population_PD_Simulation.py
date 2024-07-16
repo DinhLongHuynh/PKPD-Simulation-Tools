@@ -3,7 +3,7 @@ import streamlit as st
 from pkpd_sian.simulation import pd_simulation
 
 # Page setup 
-st.set_page_config(page_title='PD Simulation Tools', page_icon='💊', layout="wide", initial_sidebar_state="auto", menu_items=None)
+st.set_page_config(page_title='Population PD Simulation', page_icon='💊', layout="wide", initial_sidebar_state="auto", menu_items=None)
 st.title("💊 PD Simulation")
 st.write("""This page helps to visualize the PD profile of the drug, using the Emax-hill model.
 
