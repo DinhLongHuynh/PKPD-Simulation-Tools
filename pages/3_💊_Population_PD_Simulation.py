@@ -1,15 +1,6 @@
 # Import modules/packages
 import streamlit as st
-import numpy as np
-import pandas as pd
-import plotly.graph_objects as go
-from scipy.stats import norm
 from pkpd_sian.simulation import pd_simulation
-
-
-# Define function for the simulation
-
-
 
 # Page setup 
 st.set_page_config(page_title='PD Simulation Tools', page_icon='💊', layout="wide", initial_sidebar_state="auto", menu_items=None)
