@@ -14,7 +14,7 @@ st.title('💊 PKPD SiAn Tools')
 st.caption('Version 2.0.0')
 st.write("""PKPD SiAn Tools - PKPD Simulation and Analysis Tools 2.0.0 is the web application developed by Dinh Long Huynh, a current Master's Student at Uppsala University, Sweden.
 
-This application helps students and researchers to simulate and analyze different scenarios in clinical trials. The simulation uses a one-compartmental model and the analysis can be conducted based on both non-compartment and one-compartment models. The underlying mechanism of the simulation and analysis is in the *❓Helps* page. You can click the button below to see the mechanism.""")
+This application helps students and researchers to simulate and analyze different scenarios in clinical trials. The underlying mechanism of the simulation and analysis is in the *❓Helps* page. You can click the button below to see the mechanism.""")
 st.link_button("❓Helps", "https://pkpd-sian-tools.streamlit.app/Helps")
 st.write("""In version 2.0.0, the Simulation Tools are re-organized into PK Simulation and Population PK Simulation. The PK Simulation allows the flexible dosing regimen, while the Population PK Simulation now is available for single dose only.
 This version also uses the generalized API in source code by the package pkpd_sian included in the same Repository.
