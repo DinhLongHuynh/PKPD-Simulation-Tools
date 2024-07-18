@@ -111,7 +111,7 @@ def pk_profile_by_dose(df):
     Parameters:
         df (PandasDataFrame): the preprocessed dataframe by pkpd_sian.preprocessing.data_preprocessing function.
     '''
-    
+
     st.title('PK Profile by Dose')
     col1, col2 = st.columns(2)
     unique_doses = df['Dose'].unique()

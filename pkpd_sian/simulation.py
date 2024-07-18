@@ -5,7 +5,7 @@ import streamlit as st
 import pandas as pd
 from scipy.stats import norm
 
-def one_compartment_simulation(parameters): 
+def population_pk_simulation(parameters): 
     '''This function helps to visulaized the PK profile of single dose using one-compartmental model.
     
     Parameters: 
@@ -29,22 +29,30 @@ def one_compartment_simulation(parameters):
         df_C_ln (PandasDataFrame): Logarithm of Concentration by Time Profile.
         '''
     
+    # Defined time scale for the simulation
     sampling_points = np.arange(0,parameters['sampling_points']+0.1,0.1)
     time = np.array(sampling_points).reshape(1, len(sampling_points))
+    
+    # Sampling variability of PK parameters
     CV_V = norm.rvs(loc=0, scale=parameters['Omega V'], size=parameters['Number of Patients'])
     V_variability = parameters['Population Volume of Distribution'] * np.exp(CV_V)
     V_var = V_variability.reshape(parameters['Number of Patients'], 1)
+    
     CV_CL = norm.rvs(loc=0, scale=parameters['Omega CL'], size=parameters['Number of Patients'])
     CL_variability = parameters['Population Clearance'] * np.exp(CV_CL)
     CL_var = CL_variability.reshape(parameters['Number of Patients'], 1)
+    
     CV_F = norm.rvs(loc=0, scale=parameters['Omega F'], size=parameters['Number of Patients'])
     F_variability = parameters['Population Bioavailability'] * np.exp(CV_F)
     F_var = F_variability.reshape(parameters['Number of Patients'], 1)
+    
     ke_var = CL_var / V_var
+
+    # Sampling variability of residual error
     CV_resid = norm.rvs(loc=0, scale=parameters['Sigma Residual'], size=parameters['Number of Patients'])
     resid_var = np.array(CV_resid).reshape(parameters['Number of Patients'], 1)
 
-
+    # Simulation the profile 
     if parameters['Population ka'] is None:
         concentration = ((parameters['Dose'] * F_var / V_var) * np.exp(np.dot(-ke_var, time)))+resid_var
     else:
@@ -53,14 +61,14 @@ def one_compartment_simulation(parameters):
         ka_var = ka_variability.reshape(parameters['Number of Patients'], 1)
         concentration = ((parameters['Dose'] * F_var * ka_var) / (V_var * (ka_var - ke_var)) * (np.exp(np.dot(-ke_var, time)) - np.exp(np.dot(-ka_var, time))))+resid_var
 
+    # Generate the dataframe of the PK profile
     df_C = pd.DataFrame(concentration, columns=np.round(sampling_points,1))
     df_C.replace([np.inf, -np.inf], np.nan, inplace=True)
     concentration_ln = np.log(concentration)
     df_C_ln = pd.DataFrame(concentration_ln, columns=np.round(sampling_points,1))
     df_C_ln.replace([np.inf, -np.inf], np.nan, inplace=True)
     
-
-
+    # Visualized Profile
     fig = go.Figure()
     for i in range(parameters['Number of Patients']):
         if parameters['logit']:
@@ -99,8 +107,7 @@ def multiple_compartment_simulation(parameters, time, dose,F, iv):
         k_in, k_out, and V.
             Example: 
             parameters = {'Compartment 0': {'C0': Dose/V_central, 'k_in': None, 'k_out': ka, 'V': V_central},
-                            'Compartment 1': {'C0': 0, 'k_in': ka, 'k_out': ke, 'V': V_central}
-                            }
+                        'Compartment 1': {'C0': 0, 'k_in': ka, 'k_out': ke, 'V': V_central} }
         time (np.array): An array that contain time points used to generate the profile.
         dose (float): Dose Amount.
         conc_limit (float): A concentration limitation of the drug. 
@@ -154,19 +161,19 @@ def multiple_compartment_simulation(parameters, time, dose,F, iv):
     
     concentrations_initial = [param['C0'] for param in parameters.values()]
 
-    # Solve
+    # Simulation PK profile
     if iv:
         solution = odeint(general_model_iv, concentrations_initial, time)
     else: 
         solution = odeint(general_model_non_iv, concentrations_initial, time)
     
-    # Extract concentrations
+    # Re-organized the results into dictionary.
     results = {f'C{i}': solution[:, i] for i in range(len(parameters))}
 
     return results
 
 
-def pd_simulation(parameters):
+def population_pd_simulation(parameters):
     '''This function helps to visulaized the PD profile of single dose.
     
     Parameters: 
@@ -229,7 +236,7 @@ def pd_simulation(parameters):
 
 
 def pk_iv_dose(dose, time, ke, Vd):
-    '''This function helps to visualize PK profile of a single iv dose.
+    '''This function helps to visualize PK profile of a single iv dose using one-compartmental model.
     
     Parameters: 
         dose (float): Dose Amount.
@@ -246,7 +253,7 @@ def pk_iv_dose(dose, time, ke, Vd):
 
 
 def pk_prolonged_iv_dose(dose, time, ke, Vd, infusion_duration):
-    '''This function helps to visualize PK profile of a single prolonged iv dose.
+    '''This function helps to visualize PK profile of a single prolonged iv dose using one-compartmental model.
     
     Parameters: 
         dose (float): Dose Amount.
@@ -271,7 +278,7 @@ def pk_prolonged_iv_dose(dose, time, ke, Vd, infusion_duration):
 
 
 def pk_non_iv_dose(dose, F, time, ke, ka, Vd):
-    '''This function helps to visualize PK profile of a single non-iv dose.
+    '''This function helps to visualize PK profile of a single non-iv dose using one-compartmental model.
     
     Parameters: 
         dose (float): Dose Amount.

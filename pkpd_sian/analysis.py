@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
-from thefuzz import process
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score, mean_squared_error
 from scipy.optimize import curve_fit
@@ -12,7 +11,27 @@ from scipy.integrate import quad
 
 
 def non_compartmental_analysis(df):
-    # Initialize dataframe
+    '''This function helps to analysis the clinical trials results using non-comparmental analysis.
+    
+    Parameters: 
+        df (PandasDataFrame): A data frame that stores information of the clinical trials. The columns should be renamed as "ID","Dose","Time", and "Conc".
+        The additional columns is acceptable. 
+        
+    Returns: 
+        df_analysis (PandasDataFrame): A data frame that stores the analysis results, including: 
+            - ID
+            - Dose
+            - Slope
+            - Number of Lambda Points
+            - R2 Values
+            - AUC_0-last
+            - AUC_last-inf
+            - AUC _0-inf
+            - Apparent Clearance
+        
+        unqualified_id (list): A list of unqualified individuals that cannot do the analysis.'''
+    
+    # Initialize output dataframe
     data = {
         'ID': [],
         'Dose': [],
@@ -26,12 +45,14 @@ def non_compartmental_analysis(df):
         'Apparent Clearance': []
     }
     
+    # Initialize unqualified id list
     unqualified_id = []
     
+    # Extract each id data to handle
     for id in df['ID'].unique():
         df_id = df[df['ID'] == id].dropna()
         
-        # Skip if less than 3 points 
+        # Skip if is has less than 3 points 
         if df_id.shape[0] < 3:
             unqualified_id.append(id)
             continue  
@@ -43,6 +64,7 @@ def non_compartmental_analysis(df):
         r2_list = []
         slope_list = []
         
+        # Try different number of lamdapoints
         for n_points in range(3, df_id.shape[0] + 1):
             # Extract df
             df_id_point = df_id.iloc[-n_points:, :] 
@@ -95,36 +117,65 @@ def non_compartmental_analysis(df):
 
 
 def non_compartmental_plots(df_whole_profile,df_lambda_profile):
-        # Create base figure with whole profile
-        fig = px.scatter(df_whole_profile, x='Time', y='log_conc')
+    '''This function helps to visualized the choice of lambda points and the regression line on individual profile.
     
-        # Create scatter plot with trendline for lambda points
-        trend_fig = px.scatter(df_lambda_profile, x='Time', y='log_conc', trendline='ols')
+    Parameters:
+        df_whole_profile (PandasDataFrame): A dataframe containing whole profile of individuals.
+        df_lambda_profile (Pandas DataFrame): A dataframe containing only lambda points of individuals profiles.'''
     
-        # Extract the trendline data
-        trendline_data = trend_fig.data[1]  # The trendline is the second trace in the figure
+    # Create base figure with whole profile
+    fig = px.scatter(df_whole_profile, x='Time', y='log_conc')
     
-        # Add lambda profile to the main figure
-        fig.add_trace(go.Scatter(x=df_lambda_profile['Time'], y=df_lambda_profile['log_conc'], mode='markers', marker=dict(color='red'), name='Lambda Points',showlegend=False))
+    # Create scatter plot with trendline for lambda points
+    trend_fig = px.scatter(df_lambda_profile, x='Time', y='log_conc', trendline='ols')
     
-        # Add the trendline to the main figure
-        fig.add_trace(trendline_data)
+    # Extract the trendline data
+    trendline_data = trend_fig.data[1]  # The trendline is the second trace in the figure
+    
+    # Add lambda profile to the main figure
+    fig.add_trace(go.Scatter(x=df_lambda_profile['Time'], y=df_lambda_profile['log_conc'], mode='markers', marker=dict(color='red'), name='Lambda Points',showlegend=False))
+    
+    # Add the trendline to the main figure
+    fig.add_trace(trendline_data)
 
-        # Modify the axis label
-        fig.update_layout(title=f'ID {id}', xaxis_title='Time', yaxis_title='Log Concentration')
+    # Modify the axis label
+    fig.update_layout(title=f'ID {df_whole_profile['ID'].unique()}', xaxis_title='Time', yaxis_title='Log Concentration')
     
-        # Display the figure
-        config_nca = {
+    # Display the figure
+    config_nca = {
         'toImageButtonOptions': {
         'format': 'png', 
         'filename': 'nca_analysis',
         'height': None,
         'width': None,
         'scale': 5 }}
-        st.plotly_chart(fig,config = config_nca)
+    st.plotly_chart(fig,config = config_nca)
 
 
 def one_compartmental_iv_analysis(df):
+    '''This function helps to analysis the clinical trials results for iv drug using one-compartmental model.
+    The analysis is conducted using linear regression of the function: ln(C) = ln(C0) - ke*t.
+    
+    Parameters: 
+        df (PandasDataFrame): A data frame that stores information of the clinical trials. The columns should be renamed as "ID","Dose","Time", and "Conc".
+        The additional columns is acceptable. 
+        
+    Returns: 
+        df_analysis (PandasDataFrame): A data frame that stores the analysis results, including: 
+            - ID
+            - Dose
+            - C0
+            - ke
+            - R2
+            - RMSE
+            - AUC _0-inf
+            - Half life
+            - Apparent CL
+            - Apparent Vd
+        
+        unqualified_id (list): A list of unqualified individuals that cannot do the analysis.'''
+    
+    # Initialize output dataframe
     iv_analysis_results = {'ID': [],
                                'Dose':[],
                                'C0': [],
@@ -135,14 +186,19 @@ def one_compartmental_iv_analysis(df):
                                'Half life': [],
                                'Apparent CL':[],
                                'Apparent Vd':[]}
+    # Initialize unqualified id list
     unqualified_id = []
+
+    # Extract each id data to handle
     for id in df['ID'].unique():
         df_id = df[df['ID']==id].dropna()
-            
+
+        # Skip if id has less than 3 datapoints   
         if df_id.shape[0] < 3:
             unqualified_id.append(id)
             continue 
-            
+        
+        # Linear Regression 
         else:
             Y = np.log(df_id['Conc']+0.00001).values.reshape(-1, 1)
             X = df_id['Time'].values.reshape(-1, 1)
@@ -170,6 +226,36 @@ def one_compartmental_iv_analysis(df):
 
 
 def one_compartmental_im_analysis(df, predefined_F, initial_ka, initial_ke, initial_Vd):
+    '''This function helps to analysis the clinical trials results for non-iv drug using one-compartmental model.
+    The analysis is conducted using non-linear regression, therefore, it requires the initial guess of parameters.
+    
+    Parameters: 
+        df (PandasDataFrame): A data frame that stores information of the clinical trials. The columns should be renamed as "ID","Dose","Time", and "Conc".
+        The additional columns is acceptable. 
+
+        predefined_F (float): Initial guess of bioavailability.
+        predefined_ka (float): Initial guess of ka.
+        predefined_ke (float): Initial guess of ke.
+        predefined_Vd (float): Initial guess of Vd.
+        
+    Returns: 
+        df_analysis (PandasDataFrame): A data frame that stores the analysis results, including: 
+            - ID
+            - Dose
+            - ka
+            - ke
+            - Vd
+            - RMSE
+            - Tmax
+            - Cmax
+            - Half life
+            - AUC _0-inf
+            - Clearance
+
+        
+        unqualified_id (list): A list of unqualified individuals that cannot do the analysis.'''
+    
+    # Initialize output dataframe
     im_analysis_results = {'ID': [],
                                'Dose':[],
                                'ka': [],
@@ -182,15 +268,19 @@ def one_compartmental_im_analysis(df, predefined_F, initial_ka, initial_ke, init
                                'AUC_0-inf':[],
                                'Clearance':[]}
         
+    # Initialized unqualified id list
     unqualified_id = []
 
+    # Extract each id data to handle
     for id in df['ID'].unique():
         df_id = df[df['ID']==id].dropna()
             
+        # Skip if id has less than 3 datapoints
         if df_id.shape[0] < 3:
             unqualified_id.append(id)
             continue 
-            
+
+        # Non-linear regression
         else:
             def model(t, ka, ke, V):
                 F = predefined_F
@@ -218,9 +308,7 @@ def one_compartmental_im_analysis(df, predefined_F, initial_ka, initial_ke, init
             im_analysis_results['Tmax'].append(np.log(ke_est/ka_est)/(ke_est-ka_est))
             im_analysis_results['Cmax'].append(model(t =np.log(ke_est/ka_est)/(ke_est-ka_est),ka=ka_est,ke=ke_est,V=V_est))
             im_analysis_results['AUC_0-inf'].append(integral)
-            im_analysis_results['Clearance'].append(df_id['Dose'].unique()[0]/integral)
-
-            # Elimination limited rate 
+            im_analysis_results['Clearance'].append(df_id['Dose'].unique()[0]/integral) 
             if ka_est > ke_est:
                 im_analysis_results['Half life'].append(np.log(2)/ke_est)
             elif ka_est < ke_est:
