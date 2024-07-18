@@ -1,6 +1,6 @@
 # Import modules/packages
 import streamlit as st
-from pkpd_sian.simulation import one_compartment_simulation
+from pkpd_sian.simulation import population_pk_simulation
 
 
 #Page setup
@@ -60,7 +60,7 @@ if st.button("Run Simulation",key='One Compartment Simulation'):
             warning_values.append(name)
     
     if len(warning_values) == 0:
-        df_C, df_C_ln = one_compartment_simulation(parameters)
+        df_C, df_C_ln = population_pk_simulation(parameters)
         st.subheader('Simulation Data')
         if parameters['logit']:
             st.data_editor(df_C_ln)

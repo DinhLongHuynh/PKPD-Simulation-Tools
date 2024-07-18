@@ -1,6 +1,6 @@
 # Import modules/packages
 import streamlit as st
-from pkpd_sian.simulation import pd_simulation
+from pkpd_sian.simulation import population_pd_simulation
 
 # Page setup 
 st.set_page_config(page_title='Population PD Simulation', page_icon='💊', layout="wide", initial_sidebar_state="auto", menu_items=None)
@@ -55,7 +55,7 @@ if st.button("Run Simulation"):
             warning_values.append(name)
     
     if len(warning_values) == 0:
-        E_df = pd_simulation(parameters)
+        E_df = population_pd_simulation(parameters)
         st.subheader('Simulation Data')
         st.data_editor(E_df)
     else: 

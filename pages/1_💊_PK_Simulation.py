@@ -142,7 +142,7 @@ It also enables the define different dosing regimens by the buttons "Add IV Drug
 - **IV drug:**  The drug that is immediately absorped into plasma compartment.
 - **Non-IV drug:** The drug that need time to be absorped into plasma compartment.''')
     
-    st.image('/mount/src/pkpd-simulation-tools/images/Multiple_Compartmental_Model.png')
+    st.image('/Users/lod/Desktop/Projects/PKPD_Simulation_App/images/Multiple_Compartmental_Model.png')
     st.write("\n\n\n")
     
     # Initialize session states to store information
@@ -297,7 +297,6 @@ It also enables the define different dosing regimens by the buttons "Add IV Drug
 
         st.subheader('Simulation Data')
         simulation_data_display = st.data_editor(simulation_data)
-
 
 
 
