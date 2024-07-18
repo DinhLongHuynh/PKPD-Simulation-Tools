@@ -54,7 +54,7 @@ st.write('\n')
 st.subheader('Multiple-Compartmental Simulation')
 st.caption('Underlying Mechanism:')
 st.write('This model helps to visualize the PK profile using a multi-compartmental model. The absorption and elimination site is the central compartment, which is also connected to one or more peripheral compartments.')
-st.image('/Users/lod/Desktop/Projects/PKPD_Simulation_App/images/Multiple_Compartmental_Model.png')
+st.image('/mount/src/pkpd-simulation-tools/images/Multiple_Compartmental_Model.png')
 st.write('To characterize the model, a set of derivative equations is used:')
 
 st.write('**For non-iv drugs:**')
