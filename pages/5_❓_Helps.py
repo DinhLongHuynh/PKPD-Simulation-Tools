@@ -25,7 +25,7 @@ st.header('💊 PK Simulation')
 st.write('''In general, there are two types of drugs used for all PK simulations:
          
 - **IV drug:** The drug that is immediately absorbed into the central compartment.
-- **Non-IV drug:** The drug that is immediately absorbed into the central compartment.''')
+- **Non-IV drug:** The drug that is gradually absorbed into the central compartment.''')
 
 st.subheader('One-Compartmental Simulation')
 st.caption('Underlying Mechanism:')
