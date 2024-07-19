@@ -32,7 +32,7 @@ with col2:
 
 sig_resid = st.number_input("Sigma Residual", value=0.0,format="%.3f")
 C_limit = st.number_input("C Limit (mg/L)", value=None,format="%.3f")
-sampling_points = st.number_input("Time range (h)", value=24)
+sampling_points = st.number_input("Simulation range (h)", value=24, format = '%.1f')
 logit = st.toggle("Log Transformation", value=False)
 
 parameters = {'Dose': dose,
