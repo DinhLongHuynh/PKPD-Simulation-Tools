@@ -157,7 +157,7 @@ It also enables the define different dosing regimens by the buttons "Add IV Drug
     st.subheader('Central Compartment Parameters')
     col1, col2 = st.columns(2)
     with col1: 
-        simulation_range = st.number_input('Simulation Range (h)', value=24.0, format="%.3f", key='Multiple Simulation range')
+        simulation_range = st.number_input('Simulation Range (h)', value=24.0, format="%.1f", key='Multiple Simulation range')
         F = st.number_input('Bioavailability', value=1.0, format="%.3f", key='Multiple Simulation Bioavailability')
         conc_limit = st.number_input('C Limit (mg/L)', value=None, format='%.3f', key='Multiple Simulation')
         
