@@ -156,7 +156,7 @@ It also enables to define different dosing regimens by the buttons "Add IV Dose"
 
 - **Non-IV Dose:** The drug that needs time to be absorbed into plasma compartment.''')
     
-    st.image('/Users/lod/Desktop/Projects/PKPD_Simulation_App/images/Multiple_Compartmental_Model.png')
+    st.image('/mount/src/pkpd-simulation-tools/images/Multiple_Compartmental_Model.png')
     st.write("\n\n\n")
     
     # Initialize session states to store information
