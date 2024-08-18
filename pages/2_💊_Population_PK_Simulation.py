@@ -7,11 +7,9 @@ from pkpd_sian.simulation import population_pk_simulation
 st.set_page_config(page_title='Population PK Simulation', page_icon='💊', layout="wide", initial_sidebar_state="auto", menu_items=None)
 st.title("💊 Population PK Simulation")
 
-st.write("""This page helps to visualize the PK profile of the drug, using the one-compartment model.
+st.write("""This page helps to visualize PK profile of the drug, using the one-compartmental model.
 
-It takes into account dose, ka, ke, F, V, and CL to characterize the PK profile.
-
-It can used for modeling both IV and oral drugs.
+It takes into account dose, ka, ke, F, Vd, and CL to characterize the PK profile.
 
 It also takes the omega arguments as the standard deviation of the population distribution, representing unexplained interindividual variability.""")
 
@@ -32,7 +30,7 @@ with col2:
 
 sig_resid = st.number_input("Sigma Residual", value=0.0,format="%.3f")
 C_limit = st.number_input("C Limit (mg/L)", value=None,format="%.3f")
-sampling_points = st.number_input("Simulation range (h)", value=24.0, format = '%.1f')
+sampling_points = st.number_input("Simulation range (h)", value=24.0,format="%.1f")
 logit = st.toggle("Log Transformation", value=False)
 
 parameters = {'Dose': dose,

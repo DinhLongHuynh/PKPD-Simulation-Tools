@@ -17,9 +17,9 @@ with introduction:
 # Introduction
     st.write(''' This page helps users to analyze the clinical trial data. There are two approaches to the analysis:
 
- - **Non-compartmental Analysis**: the analysis will be based on the discrete data points on the PK profile to conclude several PK parameters directly.
+ - **Non-compartmental Analysis**: the analysis uses the discrete data points on the PK data to directly conclude several PK parameters.
              
- - **One-compartmental Analysis**: the analysis will fit the observed data to the predefined model and then derive PK parameters from the model.''')
+ - **One-compartmental Analysis**: the analysis fits the observed data to the predefined model and then derive PK parameters from the model.''')
 
 # File uploader
     uploaded_file = st.file_uploader('Import your CSV dataset here')
@@ -43,9 +43,9 @@ with introduction:
     if uploaded_file is not None:
         file = uploaded_file
     elif iv_drug_file:
-        file = '/mount/src/pkpd-simulation-tools/testdata/Phase_I_iv_drug.csv'
+        file = '/Users/lod/Desktop/Projects/PKPD_Simulation_App/testdata/Phase_I_iv_drug.csv'
     elif im_drug_file:
-        file = '/mount/src/pkpd-simulation-tools/testdata/Phase_I_im_drug.csv'
+        file = '/Users/lod/Desktop/Projects/PKPD_Simulation_App/testdata/Phase_I_im_drug.csv'
 
 # Read and store the data in session state
     if file is not None:
@@ -69,7 +69,7 @@ with file_characteristic:
 
     # Allow the edit from user on the dataframe
         st.subheader('Data Frame')
-        st.caption('Double-check your data. You can manipulate data directly on the displayed table.')
+        st.caption('Double-check your data. You can manipulate the data directly on the displayed table.')
         edited_extract_df = st.data_editor(extract_df, num_rows="dynamic")
 
         # Update the session state with the edited dataframe
@@ -128,9 +128,9 @@ with visualization:
 with non_compartment:
     # Tab information
     st.header('Non-Compartmental Analysis')
-    st.write("Non-compartmental analysis (NCA) is a method used in pharmacokinetics to analyze and interpret drug concentration data without assuming a specific compartmental model for the body's drug distribution and elimination processes. Instead of relying on a predetermined biological model, NCA calculates pharmacokinetic (PK) parameters directly from the observed concentration-time data.")
+    st.write("Non-compartmental analysis (NCA) is a method used in pharmacokinetics to analyze and interpret drug concentration data without assuming a specific compartmental model for the drug distribution and elimination processes. Instead of relying on a predetermined biological model, NCA calculates pharmacokinetic (PK) parameters directly from the observed concentration-time data.")
     st.write("\n")
-    st.write("One of the most important parameters estimated from NCA is the **terminal slope**, also known as the terminal rate constant. To estimate this parameter, the algorithm considers a certain number of last data points, referred to as lambda points. The consideration starts with 3 points, then gradually increases over time. During that process, a linear regression is performed between the logarithm concentration and time of these points. Subsequently, the optimal number of lambda points is selected, and the corresponding slope is identified as the terminal rate constant.")
+    st.write("One crucial parameter estimated from NCA is the **terminal slope**, also known as the terminal rate constant. To estimate this parameter, the algorithm considers a certain number of last data points, referred to as **lambda points**. The consideration starts with 3 points, then gradually increases the number of points over time. For each number of lambda points, a linear regression is performed between the logarithm concentration and time. Subsequently, the optimal number of lambda points is selected, and the corresponding slope is identified as the terminal rate constant.")
     st.write("\n")
     st.write("*However, it is important to note that the terminal slope can be either ka or ke, depending on the PK scenario. The further methods to estimate other PK parameters are described in the❓Helps page.*")
     st.write("\n")

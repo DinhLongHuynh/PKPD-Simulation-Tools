@@ -11,15 +11,15 @@ st.title("💊 PK Simulation")
 one_compartment, multiple_compartment, physiology_compartment = st.tabs(['One Compartmental Simulation','Multiple Compartmental Simulation','Physiology-based Simulation'])
 
 with one_compartment:   
-    st.write("""This page helps to visualize the drug's PK profile of the multiple-dosing regimen, using the one-compartmental model.
+    st.write("""This page helps to visualize the PK profile using the one-compartmental model.
 
-It takes the PK parameters, including ka, ke, and Vd to characterize the PK profile.
+It takes several parameters, including ka, ke, and Vd to characterize the PK profile.
 
-It also enables the define different dosing regimens by the buttons "Add IV Drug" or "Add Non-IV Drug. Each dose is characterized by the Dose Amount and the Starting Time Point. There are two types of dose:
+It also enables to define different dosing regimens by the buttons "Add IV Dose" or "Add Non-IV Dose". Each dose is characterized by the Dose Amount and the Starting Time Point. There are two types of dose:
 
-- **IV drug:** the infusion duration can be used for the prolonged IV dose. If the normal IV dose is used, infusion duration should remain None.
-- **Non-IV drug:** the total bioavailability is set equal to 1.0 by default. It can be changed when you have information.
-
+- **IV Dose:** the infusion duration can be used for the prolonged IV dose. If the normal IV dose is used, infusion duration should remain as "None".
+- **Non-IV Dose:** the total bioavailability is set equal to 1.0 by default. It can be changed when you have information.
+             
 """)
 
     # Input the PK parameters
@@ -30,6 +30,7 @@ It also enables the define different dosing regimens by the buttons "Add IV Drug
     with col2:
         Vd = st.number_input("Volume of Distribution (L)", value=33.2,format="%.3f")
         simulation_range = st.number_input('Simulation Range (h)',value = 100.0, format="%.1f")
+    conc_limit = st.number_input('C Limit (mg/L)', value=None, format='%.3f', key='One_comparment Simulation')
 
     st.write("\n\n\n")
 
@@ -114,6 +115,8 @@ It also enables the define different dosing regimens by the buttons "Add IV Drug
                 fig.add_trace(go.Scatter(x=np.arange(0, simulation_range+0.1, 0.1), y=conc_array, mode='lines', name=f'Dose {i+1}'))
         if combine_profile:
             fig.add_trace(go.Scatter(x=np.arange(0,simulation_range+0.1, 0.1), y=simulate_conc, mode='lines',name='Combined Profile'))
+        if conc_limit is not None: 
+            fig.add_hline(y=conc_limit, line_dash="dash", line_color="red")
         fig.update_yaxes(title_text='Concentration (mg/L)')
         fig.update_xaxes(title_text='Time (h)')
         fig.update_layout(title='PK simulation')
@@ -129,20 +132,31 @@ It also enables the define different dosing regimens by the buttons "Add IV Drug
     }}
 
         st.plotly_chart(fig, config = config)
+
+        #Display simulation data
+        simulation_dict_one_compartment = {'Time': np.arange(0,simulation_range+0.1,0.1),
+                                           'Total Conc': simulate_conc}
+        simulation_data_1_one_compartment = pd.DataFrame(simulation_dict_one_compartment)
+        simulation_data_2_one_compartment = pd.DataFrame(conc_each_dose)
+        simulation_data_2_one_compartment.columns = [f'Dose {i + 1}' for i in simulation_data_2_one_compartment.columns]        
+        simulation_data_one_compartment = pd.concat([simulation_data_1_one_compartment,simulation_data_2_one_compartment],axis=1)
+        st.subheader('Simulation Data')
+        simulation_data_one_compartment = st.data_editor(simulation_data_one_compartment)
     
 with multiple_compartment:
-    st.write('''This page helps to simulate PK profile using a multiple compartmental model. The graphical representation of the model is described by the figure below.
-             
-The model includes one central compartment responsible for drug absorption and elimination. Various parameters for this compartment include Absorption Rate Constant, Elimination Rate Constant, and Volume of Distribution.
+    st.write('''This page helps to simulate the PK profile using a multiple-compartmental model. The graphical representation of the model is described in the figure below.
+
+The model includes one central compartment responsible for drug absorption and elimination. Various parameters for this compartment include the Absorption Rate Constant, Elimination Rate Constant, and Volume of Distribution.
 
 The model also includes one or more peripheral compartments directly connected to the central one. Each peripheral compartment is characterized by its Initial Drug Concentration, k_in, and k_out.
 
-It also enables the define different dosing regimens by the buttons "Add IV Drug" or "Add Non-IV Drug. Each dose is characterized by the Dose Amount and the Starting Time Point. There are two types of dose:
+It also enables to define different dosing regimens by the buttons "Add IV Dose" or "Add Non-IV Dose". Each dose is characterized by the Dose Amount and the Starting Time Point. There are two types of doses:
 
-- **IV drug:**  The drug that is immediately absorped into plasma compartment.
-- **Non-IV drug:** The drug that need time to be absorped into plasma compartment.''')
+- **IV Dose:** The drug that is immediately absorbed into the plasma compartment.
+
+- **Non-IV Dose:** The drug that needs time to be absorbed into plasma compartment.''')
     
-    st.image('/mount/src/pkpd-simulation-tools/images/Multiple_Compartmental_Model.png')
+    st.image('/Users/lod/Desktop/Projects/PKPD_Simulation_App/images/Multiple_Compartmental_Model.png')
     st.write("\n\n\n")
     
     # Initialize session states to store information

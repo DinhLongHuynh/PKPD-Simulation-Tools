@@ -1,5 +1,6 @@
 import streamlit as st
 
+
 st.set_page_config(page_title='Contact', page_icon='📞', layout="wide", initial_sidebar_state="auto", menu_items=None)
 st.title('📞 Contact Information')
 
@@ -10,3 +11,5 @@ st.write('**Email:** dinhlong240600@gmail.com')
 st.write('**GitHub:** https://github.com/DinhLongHuynh')
 st.write('**Linkedin:** https://www.linkedin.com/in/dinh-long-huynh-996193241/')
 st.write('*Copyright © 2024 Dinh Long Huynh*')
+
+
