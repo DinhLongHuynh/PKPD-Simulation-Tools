@@ -27,13 +27,13 @@ def data_preprocessing(df):
     # Let user define the columns
     col1, col2 = st.columns(2)
     with col1:  # Use pre-assign columns as the default argument
-        st.write('Compulsory Information')
+        st.write('**Compulsory Information**')
         ID_col = st.selectbox('Select a column that represent ID', df.columns, index=default_id_index)
         Time_col = st.selectbox('Select a column that represent Time', df.columns, index=default_time_index)
         Concentration_col = st.selectbox('Select a column that represent Concentration', df.columns, index=default_conc_index)
         Dose_col = st.selectbox('Select a column that represent Dose', df.columns, index=default_dose_index)
     with col2:
-        st.write('Additional Information')
+        st.write('**Additional Information**')
         Age_col = st.selectbox('Select a column that represent Age', df.columns, index=None)
         Weight_col = st.selectbox('Select a column that represent Body Weight', df.columns, index=None)
         Gender_col = st.selectbox('Select a column that represent Gender', df.columns, index=None)

@@ -139,8 +139,7 @@ def non_compartmental_plots(df_whole_profile,df_lambda_profile):
     fig.add_trace(trendline_data)
 
     # Modify the axis label
-    id = df_lambda_profile['ID'].unique()
-    fig.update_layout(title=f'ID {id}', xaxis_title='Time', yaxis_title='Log Concentration')
+    fig.update_layout(title=f'ID {df_whole_profile['ID'].unique()}', xaxis_title='Time', yaxis_title='Log Concentration')
     
     # Display the figure
     config_nca = {
