@@ -57,7 +57,7 @@ def id_count_by_dose(df,gender):
             'height': None,
             'width': None,
             'scale': 5  }}
-        plot = st.plotly_chart(fig, use_container_width=True)
+        plot = st.plotly_chart(fig, use_container_width=True,key='plotly_gender_chart')
 
             # Plot characteristic
         plot_title = st.text_input('Edit plot title:',value = 'Number of ID by Dose and Gender')
@@ -69,7 +69,7 @@ def id_count_by_dose(df,gender):
             ylabel = st.text_input('Edit y label:',value = 'Dose')
             
         fig.update_layout(title=plot_title, xaxis_title=xlabel, yaxis_title=ylabel)
-        plot.plotly_chart(fig, use_container_width=True,config=config)
+        plot.plotly_chart(fig, use_container_width=True,config=config,key='plotly_gender_chart_updated')
         
     else:
         # Handling data: 
@@ -90,7 +90,7 @@ def id_count_by_dose(df,gender):
             'height': None,
             'width': None,
             'scale': 5  }}
-        plot = st.plotly_chart(fig, use_container_width=True,config=config)
+        plot = st.plotly_chart(fig, use_container_width=True,config=config,key='plotly_dose_chart')
 
         # Plot characteristic
         plot_title = st.text_input('Edit plot title:',value = 'Number of ID by Dose')
@@ -103,7 +103,7 @@ def id_count_by_dose(df,gender):
             
         fig.update_layout(title=plot_title, xaxis_title=xlabel, yaxis_title=ylabel)
 
-        plot.plotly_chart(fig, use_container_width=True,config = config)
+        plot.plotly_chart(fig, use_container_width=True,config = config,key='plotly_dose_chart_updated')
 
 
 def pk_profile_by_dose(df):
