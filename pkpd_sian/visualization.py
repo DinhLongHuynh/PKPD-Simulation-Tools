@@ -57,19 +57,19 @@ def id_count_by_dose(df,gender):
             'height': None,
             'width': None,
             'scale': 5  }}
-        plot = st.plotly_chart(fig, use_container_width=True,key='plotly_gender_chart')
+        plot = st.plotly_chart(fig, use_container_width=True,key='plotly_gender_chart_1')
 
             # Plot characteristic
-        plot_title = st.text_input('Edit plot title:',value = 'Number of ID by Dose and Gender')
+        plot_title = st.text_input('Edit plot title:',value = 'Number of ID by Dose and Gender',key='gender_plot_title')
             
         col3, col4 = st.columns(2)
         with col3:
-            xlabel = st.text_input('Edit x label:',value = 'ID Counts')
+            xlabel = st.text_input('Edit x label:',value = 'ID Counts',key='gender_xlabel')
         with col4:
-            ylabel = st.text_input('Edit y label:',value = 'Dose')
+            ylabel = st.text_input('Edit y label:',value = 'Dose',key='gender_ylabel')
             
         fig.update_layout(title=plot_title, xaxis_title=xlabel, yaxis_title=ylabel)
-        plot.plotly_chart(fig, use_container_width=True,config=config,key='plotly_gender_chart_updated')
+        plot.plotly_chart(fig, use_container_width=True,config=config,key='plotly_gender_chart_2')
         
     else:
         # Handling data: 
@@ -90,20 +90,20 @@ def id_count_by_dose(df,gender):
             'height': None,
             'width': None,
             'scale': 5  }}
-        plot = st.plotly_chart(fig, use_container_width=True,config=config,key='plotly_dose_chart')
+        plot = st.plotly_chart(fig, use_container_width=True,config=config,key='plotly_dose_chart_1')
 
         # Plot characteristic
-        plot_title = st.text_input('Edit plot title:',value = 'Number of ID by Dose')
+        plot_title = st.text_input('Edit plot title:',value = 'Number of ID by Dose',key='dose_plot_title')
             
         col3, col4 = st.columns(2)
         with col3:
-            xlabel = st.text_input('Edit x label:',value = 'ID Counts')
+            xlabel = st.text_input('Edit x label:',value = 'ID Counts',key='dose_xlabel')
         with col4:
-            ylabel = st.text_input('Edit y label:',value = 'Dose')
+            ylabel = st.text_input('Edit y label:',value = 'Dose',key='dose_ylabel')
             
         fig.update_layout(title=plot_title, xaxis_title=xlabel, yaxis_title=ylabel)
 
-        plot.plotly_chart(fig, use_container_width=True,config = config,key='plotly_dose_chart_updated')
+        plot.plotly_chart(fig, use_container_width=True,config = config,key='plotly_dose_chart_2')
 
 
 def pk_profile_by_dose(df):
