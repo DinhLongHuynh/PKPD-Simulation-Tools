@@ -209,7 +209,7 @@ def one_compartmental_iv_analysis(df):
             # Store the primary data
             iv_analysis_results['ID'].append(id)
             iv_analysis_results['R2'].append(r2_score(y_true=np.exp(Y), y_pred=np.exp(prediction)))
-            iv_analysis_results['RMSE'].append(mean_squared_error(y_true=np.exp(Y), y_pred=np.exp(prediction), squared=False))
+            iv_analysis_results['RMSE'].append(root_mean_squared_error(y_true=np.exp(Y), y_pred=np.exp(prediction)))
             iv_analysis_results['ke'].append(-model.coef_.item())
             iv_analysis_results['C0'].append(np.exp(model.intercept_.item()))
             iv_analysis_results['Dose'].append(df_id['Dose'].unique()[0])
