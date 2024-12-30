@@ -294,7 +294,7 @@ def one_compartmental_im_analysis(df, predefined_F, initial_ka, initial_ke, init
             ka_est, ke_est, V_est = params
                 
             prediction = model(X, ka_est, ke_est, V_est)
-            RMSE = mean_squared_error(Y,prediction, squared=False)
+            RMSE = root_mean_squared_error(Y,prediction)
 
             integral, _ = quad(model, 0, np.inf, args=(ka_est, ke_est, V_est))
 
