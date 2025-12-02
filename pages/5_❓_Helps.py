@@ -1,5 +1,10 @@
+import os
+from pathlib import Path
+
 import streamlit as st
 import pandas as pd
+
+IMG_DIR = Path(os.getenv("IMG_DIR", Path(__file__).resolve().parents[1] / "images"))
 
 
 st.set_page_config(page_title='Helps', page_icon='❓', layout="wide", initial_sidebar_state="auto", menu_items=None)
@@ -55,7 +60,7 @@ st.write('\n')
 st.subheader('Multiple-Compartmental Simulation')
 st.caption('Underlying Mechanism:')
 st.write('This model helps to visualize the PK profile using multi-compartmental model. The absorption and elimination site is the central compartment, which is also connected to one or more peripheral compartments.')
-st.image('/mount/src/pkpd-simulation-tools/images/Multiple_Compartmental_Model.png')
+st.image(str(IMG_DIR / 'Multiple_Compartmental_Model.png'))
 st.write('To characterize the model, a set of derivative equations is used:')
 
 st.write('**For non-iv drugs:**')
@@ -254,4 +259,3 @@ st.write('- **AUC_0-inf** _ generated parameter: The AUC from time point 0 to th
 st.latex(r'\text{AUC}_{0-\infty} = \int_{0}^{\infty} \frac{F \times \text{Dose} \times k_a}{V_d \times (k_a - k_e)} \times \left( e^{-k_e \times t} - e^{-k_a \times t} \right) \, dt')
 st.write('- **Clearance** _ generated parameter: This is the total clearance of drug. It has the unit of volume divided by time, therefore the unit depends on the concentration and time unit used in the analysis. Clearance is calculated from Dose and AUC_0-inf.')
 st.latex(r'CL = \frac{\text{Dose}}{AUC_{0-inf}}')
-

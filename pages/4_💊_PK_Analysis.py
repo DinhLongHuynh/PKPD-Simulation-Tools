@@ -1,10 +1,15 @@
 # Import module/package
+import os
+from pathlib import Path
+
 import streamlit as st
 import pandas as pd 
 import numpy as np
 from pkpd_sian.visualization import distribution_plots, id_count_by_dose, pk_profile_by_dose
 from pkpd_sian.analysis import non_compartmental_analysis, non_compartmental_plots, one_compartmental_iv_analysis, one_compartmental_im_analysis
 from pkpd_sian.preprocessing import data_preprocessing
+
+DATA_DIR = Path(os.getenv("DATA_DIR", Path(__file__).resolve().parents[1] / "testdata"))
 
 # Page setup
 st.set_page_config(page_title='PK Analysis', page_icon='💊', layout="wide", initial_sidebar_state="auto", menu_items=None)
@@ -43,9 +48,9 @@ with introduction:
     if uploaded_file is not None:
         file = uploaded_file
     elif iv_drug_file:
-        file = '/mount/src/pkpd-simulation-tools/testdata/Phase_I_iv_drug.csv'
+        file = DATA_DIR / 'Phase_I_iv_drug.csv'
     elif im_drug_file:
-        file = '/mount/src/pkpd-simulation-tools/testdata/Phase_I_im_drug.csv'
+        file = DATA_DIR / 'Phase_I_im_drug.csv'
 
 # Read and store the data in session state
     if file is not None:
@@ -262,5 +267,4 @@ with one_compartment:
     
     else:
         st.info('You should upload the file first')
-
 

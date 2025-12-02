@@ -1,8 +1,13 @@
+import os
+from pathlib import Path
+
 import streamlit as st
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from pkpd_sian.simulation import pk_iv_dose, pk_prolonged_iv_dose, pk_non_iv_dose,multiple_compartment_simulation
+
+IMG_DIR = Path(os.getenv("IMG_DIR", Path(__file__).resolve().parents[1] / "images"))
 
 
 # Page setup
@@ -156,7 +161,7 @@ It also enables to define different dosing regimens by the buttons "Add IV Dose"
 
 - **Non-IV Dose:** The drug that needs time to be absorbed into plasma compartment.''')
     
-    st.image('/mount/src/pkpd-simulation-tools/images/Multiple_Compartmental_Model.png')
+    st.image(str(IMG_DIR / 'Multiple_Compartmental_Model.png'))
     st.write("\n\n\n")
     
     # Initialize session states to store information

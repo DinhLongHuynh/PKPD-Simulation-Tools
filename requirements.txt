@@ -1,8 +1,8 @@
-numpy
-pandas
-plotly
-scipy
-thefuzz
-scikit-learn
-statsmodels
-scipy
+numpy==2.1.2
+pandas==2.2.3
+plotly==5.24.1
+scipy==1.14.1
+thefuzz==0.22.1
+scikit-learn==1.5.2
+statsmodels==0.14.3
+streamlit==1.39.0
