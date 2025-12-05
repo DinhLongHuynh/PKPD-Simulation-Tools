@@ -4,6 +4,8 @@ import pandas as pd
 import plotly.graph_objects as go
 from scipy.stats import norm
 
+from pkpd_sian import __version__
+
 
 # Define the layout of the app
 st.set_page_config(page_title='PKPD SiAn Tools', page_icon='💊', layout="wide", initial_sidebar_state="auto", menu_items=None)
@@ -11,10 +13,10 @@ st.sidebar.title('HOME')
 
 # App introduction
 st.title('💊 PKPD SiAn Tools')
-st.caption('Version 2.0.1')
-st.write("""PKPD SiAn Tools - PKPD Simulation and Analysis Tools 2.0.1 is the web application designed to help students and researchers to simulate and analyze different scenarios in clinical trials. The underlying mechanism of the simulation and analysis is in the *❓Helps* page. You can click the button below to see the mechanism.""")
+st.caption(f'Version {__version__}')
+st.write(f"""PKPD SiAn Tools - PKPD Simulation and Analysis Tools {__version__} is the web application designed to help students and researchers to simulate and analyze different scenarios in clinical trials. The underlying mechanism of the simulation and analysis is in the *❓Helps* page. You can click the button below to see the mechanism.""")
 st.link_button("❓Helps", "https://pkpd-sian-tools.streamlit.app/Helps")
-st.write("""In version 2.0.1, the Simulation Tools are reorganized into Individual Simulation and Population Simulation. All Individual Simulations allow the flexible dosing regimen, while the Population PK Simulation now is available for single dose only.
+st.write(f"""In version {__version__}, the Simulation Tools are reorganized into Individual Simulation and Population Simulation. All Individual Simulations allow the flexible dosing regimen, while the Population PK Simulation now is available for single dose only.
 This version also uses the generalized API in source code by the package pkpd_sian included in the same Repository.
          
 The ongoing 2.1.0 version will be updated soon, which incorporates Physologically Based Pharmacokinetic Models. """)
@@ -27,7 +29,7 @@ st.write('\n')
 
 if update_history:
     st.header('🗒 Update History')
-    st.write('''- **Version 1.0.0:** The software was initialized with simulation tools only, for PK and PD, which take into account interindividual variability.
+    st.write(f'''- **Version 1.0.0:** The software was initialized with simulation tools only, for PK and PD, which take into account interindividual variability.
 
 - **Version 1.0.1:** The Combine Dose Regimen simulation was updated, which enables the simulation of two different dosing regimens.
 
@@ -50,6 +52,4 @@ if update_history:
              
 - **Version 2.0.0:** Simulation Tools are reorganized into Individual Simulation and Population Simulation. All Individual Simulation allow the flexible dosing regimen, while the Population PK Simulation now is available for single dose only. This version also uses the generalized API in source code by the package pkpd_sian included in the same GitHub Repository.
 
-- **Version 2.0.1:** The RMSE calculation is changed from mean_squared_error(squared=False) to root_mean_squared_error() due to the update of sklearn.metrics.''')
-
-
+- **Version {__version__}:** The RMSE calculation is changed from mean_squared_error(squared=False) to root_mean_squared_error() due to the update of sklearn.metrics.''')
