@@ -4,5 +4,7 @@ toolbarMode = "viewer"
 [theme]
 base = 'dark'
 
-[sever]
+[server]
+headless = true
+enableXsrfProtection = true
 maxUploadSize = 1024
