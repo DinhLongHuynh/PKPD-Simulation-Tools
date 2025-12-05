@@ -37,4 +37,4 @@ docker build -t pkpd-sian-tools .
 docker run --rm -p 8501:8501 pkpd-sian-tools    # exposes http://localhost:8501
 ```
 
-The ongoing 2.1.0 roadmap will incorporate Physiologically Based Pharmacokinetic (PBPK) models. Please review `AGENTS.md` for contributor expectations before submitting changes.
+The ongoing 2.1.0 roadmap will incorporate Physiologically Based Pharmacokinetic (PBPK) models.
