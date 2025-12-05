@@ -4,6 +4,30 @@ import plotly.express as px
 import pandas as pd
 
 
+def _editable_plot(fig, *, default_title, default_xlabel, default_ylabel, key_prefix, filename):
+    """Render a chart with text inputs that immediately update axis labels."""
+    config = {
+        'toImageButtonOptions': {
+            'format': 'png',
+            'filename': filename,
+            'height': None,
+            'width': None,
+            'scale': 5
+        }
+    }
+    placeholder = st.empty()
+    placeholder.plotly_chart(fig, use_container_width=True, config=config, key=f'{key_prefix}_initial')
+
+    plot_title = st.text_input('Edit plot title:', value=default_title, key=f'{key_prefix}_title')
+    col_left, col_right = st.columns(2)
+    with col_left:
+        xlabel = st.text_input('Edit x label:', value=default_xlabel, key=f'{key_prefix}_xlabel')
+    with col_right:
+        ylabel = st.text_input('Edit y label:', value=default_ylabel, key=f'{key_prefix}_ylabel')
+
+    fig.update_layout(title=plot_title, xaxis_title=xlabel, yaxis_title=ylabel)
+    placeholder.plotly_chart(fig, use_container_width=True, config=config, key=f'{key_prefix}_updated')
+
 
 def distribution_plots(data,x,xlabel,ylabel,title):
     '''This function helps to draw the histogram of feature X in the dataframe
@@ -50,26 +74,14 @@ def id_count_by_dose(df,gender):
         default_ylabel = 'Dose'
         fig = px.bar( id_count_df, x='ID_count', y='Dose', color='Gender', orientation='h',title = default_plot_title)
         fig.update_layout(xaxis_title=default_xlabel, yaxis_title=default_ylabel, legend_title_text='Gender')
-        config = {
-            'toImageButtonOptions': {
-            'format': 'png', 
-            'filename': 'ID_counts_by_Dose_Gender',
-            'height': None,
-            'width': None,
-            'scale': 5  }}
-        plot = st.plotly_chart(fig, use_container_width=True,key='plotly_gender_chart_1')
-
-            # Plot characteristic
-        plot_title = st.text_input('Edit plot title:',value = 'Number of ID by Dose and Gender',key='gender_plot_title')
-            
-        col3, col4 = st.columns(2)
-        with col3:
-            xlabel = st.text_input('Edit x label:',value = 'ID Counts',key='gender_xlabel')
-        with col4:
-            ylabel = st.text_input('Edit y label:',value = 'Dose',key='gender_ylabel')
-            
-        fig.update_layout(title=plot_title, xaxis_title=xlabel, yaxis_title=ylabel)
-        plot.plotly_chart(fig, use_container_width=True,config=config,key='plotly_gender_chart_2')
+        _editable_plot(
+            fig,
+            default_title=default_plot_title,
+            default_xlabel=default_xlabel,
+            default_ylabel=default_ylabel,
+            key_prefix='gender_plot',
+            filename='ID_counts_by_Dose_Gender'
+        )
         
     else:
         # Handling data: 
@@ -83,27 +95,14 @@ def id_count_by_dose(df,gender):
         default_ylabel = 'Dose'
         fig = px.bar(id_count_df, x='ID_count', y='Dose', orientation='h',color = 'Dose', title = default_plot_title ,color_discrete_sequence=px.colors.qualitative.Safe)
         fig.update_layout(xaxis_title=default_xlabel, yaxis_title=default_ylabel)
-        config = {
-            'toImageButtonOptions': {
-            'format': 'png', 
-            'filename': 'ID_counts_by_Dose',
-            'height': None,
-            'width': None,
-            'scale': 5  }}
-        plot = st.plotly_chart(fig, use_container_width=True,config=config,key='plotly_dose_chart_1')
-
-        # Plot characteristic
-        plot_title = st.text_input('Edit plot title:',value = 'Number of ID by Dose',key='dose_plot_title')
-            
-        col3, col4 = st.columns(2)
-        with col3:
-            xlabel = st.text_input('Edit x label:',value = 'ID Counts',key='dose_xlabel')
-        with col4:
-            ylabel = st.text_input('Edit y label:',value = 'Dose',key='dose_ylabel')
-            
-        fig.update_layout(title=plot_title, xaxis_title=xlabel, yaxis_title=ylabel)
-
-        plot.plotly_chart(fig, use_container_width=True,config = config,key='plotly_dose_chart_2')
+        _editable_plot(
+            fig,
+            default_title=default_plot_title,
+            default_xlabel=default_xlabel,
+            default_ylabel=default_ylabel,
+            key_prefix='dose_plot',
+            filename='ID_counts_by_Dose'
+        )
 
 
 def pk_profile_by_dose(df):

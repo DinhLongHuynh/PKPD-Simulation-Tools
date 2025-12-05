@@ -5,7 +5,45 @@ import streamlit as st
 import pandas as pd
 from scipy.stats import norm
 
-def population_pk_simulation(parameters): 
+
+def _sample_lognormal(pop_value, omega, size):
+    """Draw log-normally distributed samples shaped for broadcasting."""
+    draws = norm.rvs(loc=0, scale=omega, size=size)
+    return (pop_value * np.exp(draws)).reshape(size, 1)
+
+
+def _sample_normal(scale, size):
+    """Draw normally distributed residuals shaped for broadcasting."""
+    draws = norm.rvs(loc=0, scale=scale, size=size)
+    return np.array(draws).reshape(size, 1)
+
+
+def _ordered_compartments(parameters):
+    """Return compartment definitions sorted by numeric suffix."""
+    sorted_keys = sorted(parameters.keys(), key=lambda key: int(key.split()[1]))
+    return [parameters[key].copy() for key in sorted_keys]
+
+
+def _initial_concentrations(compartments, dose, F, iv):
+    """Set compartment C0 values based on route of administration."""
+    if iv:
+        compartments[0]['C0'] = 0
+        compartments[1]['C0'] = dose / compartments[0]['V']
+    else:
+        compartments[0]['C0'] = F * dose / compartments[0]['V']
+        compartments[1]['C0'] = 0
+    return [comp['C0'] for comp in compartments]
+
+
+def _peripheral_exchange(compartments, concentrations):
+    """Aggregate exchange between central and peripheral compartments."""
+    flux = 0.0
+    for idx in range(2, len(compartments)):
+        comp = compartments[idx]
+        flux += comp['k_out'] * concentrations[idx] - comp['k_in'] * concentrations[1]
+    return flux
+
+def population_pk_simulation(parameters):
     '''This function helps to visulaized the PK profile of single dose using one-compartmental model.
     
     Parameters: 
@@ -28,78 +66,73 @@ def population_pk_simulation(parameters):
         df_C (PandasDataFrame): Concentration by Time Profile.
         df_C_ln (PandasDataFrame): Logarithm of Concentration by Time Profile.
         '''
-    
+
+    n_patients = parameters['Number of Patients']
+
     # Defined time scale for the simulation
-    sampling_points = np.arange(0,parameters['sampling_points']+0.1,0.1)
+    sampling_points = np.arange(0, parameters['sampling_points'] + 0.1, 0.1)
     time = np.array(sampling_points).reshape(1, len(sampling_points))
-    
+
     # Sampling variability of PK parameters
-    CV_V = norm.rvs(loc=0, scale=parameters['Omega V'], size=parameters['Number of Patients'])
-    V_variability = parameters['Population Volume of Distribution'] * np.exp(CV_V)
-    V_var = V_variability.reshape(parameters['Number of Patients'], 1)
-    
-    CV_CL = norm.rvs(loc=0, scale=parameters['Omega CL'], size=parameters['Number of Patients'])
-    CL_variability = parameters['Population Clearance'] * np.exp(CV_CL)
-    CL_var = CL_variability.reshape(parameters['Number of Patients'], 1)
-    
-    CV_F = norm.rvs(loc=0, scale=parameters['Omega F'], size=parameters['Number of Patients'])
-    F_variability = parameters['Population Bioavailability'] * np.exp(CV_F)
-    F_var = F_variability.reshape(parameters['Number of Patients'], 1)
-    
+    V_var = _sample_lognormal(parameters['Population Volume of Distribution'], parameters['Omega V'], n_patients)
+    CL_var = _sample_lognormal(parameters['Population Clearance'], parameters['Omega CL'], n_patients)
+    F_var = _sample_lognormal(parameters['Population Bioavailability'], parameters['Omega F'], n_patients)
+
     ke_var = CL_var / V_var
 
     # Sampling variability of residual error
-    CV_resid = norm.rvs(loc=0, scale=parameters['Sigma Residual'], size=parameters['Number of Patients'])
-    resid_var = np.array(CV_resid).reshape(parameters['Number of Patients'], 1)
+    resid_var = _sample_normal(parameters['Sigma Residual'], n_patients)
 
-    # Simulation the profile 
-    if parameters['Population ka'] is None:
-        concentration = ((parameters['Dose'] * F_var / V_var) * np.exp(np.dot(-ke_var, time)))+resid_var
+    dose = parameters['Dose']
+    population_ka = parameters['Population ka']
+    if population_ka is None:
+        concentration = (dose * F_var / V_var) * np.exp(np.dot(-ke_var, time)) + resid_var
     else:
-        CV_ka = norm.rvs(loc=0, scale=parameters['Omega ka'], size=parameters['Number of Patients'])
-        ka_variability = parameters['Population ka'] * np.exp(CV_ka)
-        ka_var = ka_variability.reshape(parameters['Number of Patients'], 1)
-        concentration = ((parameters['Dose'] * F_var * ka_var) / (V_var * (ka_var - ke_var)) * (np.exp(np.dot(-ke_var, time)) - np.exp(np.dot(-ka_var, time))))+resid_var
+        ka_var = _sample_lognormal(population_ka, parameters['Omega ka'], n_patients)
+        concentration = (
+            (dose * F_var * ka_var) / (V_var * (ka_var - ke_var))
+            * (np.exp(np.dot(-ke_var, time)) - np.exp(np.dot(-ka_var, time)))
+            + resid_var
+        )
 
     # Generate the dataframe of the PK profile
-    df_C = pd.DataFrame(concentration, columns=np.round(sampling_points,1))
+    rounded_sampling = np.round(sampling_points, 1)
+    df_C = pd.DataFrame(concentration, columns=rounded_sampling)
     df_C.replace([np.inf, -np.inf], np.nan, inplace=True)
-    concentration_ln = np.log(concentration)
-    df_C_ln = pd.DataFrame(concentration_ln, columns=np.round(sampling_points,1))
+    df_C_ln = pd.DataFrame(np.log(concentration), columns=rounded_sampling)
     df_C_ln.replace([np.inf, -np.inf], np.nan, inplace=True)
-    
+
     # Visualized Profile
     fig = go.Figure()
-    for i in range(parameters['Number of Patients']):
-        if parameters['logit']:
-            pk_data = df_C_ln.iloc[i, :]
-            fig.add_trace(go.Scatter(x=sampling_points, y=pk_data, mode='lines',showlegend=False))
-            fig.update_yaxes(title_text='Log[Concentration] (mg/L)')
-            if parameters['C Limit'] is not None:
-                fig.add_hline(y=np.log(parameters['C Limit']), line_dash="dash", line_color="red")
-        else:
-            pk_data = df_C.iloc[i, :]
-            fig.add_trace(go.Scatter(x=sampling_points, y=pk_data, mode='lines',showlegend=False))
-            fig.update_yaxes(title_text='Concentration (mg/L)')
-            if parameters['C Limit'] is not None:
-                fig.add_hline(y=parameters['C Limit'], line_dash="dash", line_color="red")
+    plot_log = parameters['logit']
+    frame_to_plot = df_C_ln if plot_log else df_C
+    for i in range(n_patients):
+        fig.add_trace(
+            go.Scatter(x=sampling_points, y=frame_to_plot.iloc[i, :], mode='lines', showlegend=False)
+        )
+    fig.update_yaxes(
+        title_text='Log[Concentration] (mg/L)' if plot_log else 'Concentration (mg/L)'
+    )
+    if parameters['C Limit'] is not None:
+        limit_value = np.log(parameters['C Limit']) if plot_log else parameters['C Limit']
+        fig.add_hline(y=limit_value, line_dash="dash", line_color="red")
     fig.update_xaxes(title_text='Time (h)')
     fig.update_layout(title='PK simulation')
 
     config = {
-    'toImageButtonOptions': {
-        'format': 'png', 
-        'filename': 'PK_simulation',
-        'height': None,
-        'width': None,
-        'scale': 5
-    }}
-    st.plotly_chart(fig,config=config)
+        'toImageButtonOptions': {
+            'format': 'png',
+            'filename': 'PK_simulation',
+            'height': None,
+            'width': None,
+            'scale': 5
+        }}
+    st.plotly_chart(fig, config=config)
 
     return df_C, df_C_ln
 
 
-def multiple_compartment_simulation(parameters, time, dose,F, iv):
+def multiple_compartment_simulation(parameters, time, dose, F, iv):
     '''This function helps to visualize pharmacokinetic profile of single dose using multiple-comparmental model.
     
     Parameters: 
@@ -118,48 +151,32 @@ def multiple_compartment_simulation(parameters, time, dose,F, iv):
         '''
     
 
-    # Define the model
-    def general_model_iv(concentrations, t):
-        dCdt_dict = {}
-        # Compartment 0
-        dCdt_dict['dC0dt'] = dose / parameters['Compartment 0']['V']
-        # Compartment 1
-        dCdt_dict['dC1dt'] = (- parameters['Compartment 1']['k_out'] * concentrations[1]
-                          + sum(parameters['Compartment ' + str(i)]['k_out'] * concentrations[i] - parameters['Compartment ' + str(i)]['k_in'] * concentrations[1] for i in range(2, len(parameters))))
-        # Other compartments
-        for i in range(2, len(parameters)):
-            dCdt_dict['dC' + str(i) + 'dt'] = (parameters['Compartment ' + str(i)]['k_in'] * concentrations[1]
-                                       - parameters['Compartment ' + str(i)]['k_out'] * concentrations[i])
-        
+    compartments = _ordered_compartments(parameters)
+    n_compartments = len(compartments)
 
-        return [dCdt_dict['dC' + str(i) + 'dt'] for i in range(len(dCdt_dict))]
+    def general_model_iv(concentrations, _t):
+        derivatives = [0.0] * n_compartments
+        derivatives[0] = dose / compartments[0]['V']
+        derivatives[1] = -compartments[1]['k_out'] * concentrations[1] + _peripheral_exchange(compartments, concentrations)
+        for idx in range(2, n_compartments):
+            comp = compartments[idx]
+            derivatives[idx] = comp['k_in'] * concentrations[1] - comp['k_out'] * concentrations[idx]
+        return derivatives
     
-    def general_model_non_iv(concentrations, t):
-        dCdt_dict = {}
-        # Compartment 0
-        dCdt_dict['dC0dt'] = -parameters['Compartment 0']['k_out'] * concentrations[0]
-        # Compartment 1
-        dCdt_dict['dC1dt'] = (parameters['Compartment 0']['k_out'] * concentrations[0]
-                          - parameters['Compartment 1']['k_out'] * concentrations[1]
-                          + sum(parameters['Compartment ' + str(i)]['k_out'] * concentrations[i] - parameters['Compartment ' + str(i)]['k_in'] * concentrations[1] for i in range(2, len(parameters))))
-        # Other compartments
-        for i in range(2, len(parameters)):
-            dCdt_dict['dC' + str(i) + 'dt'] = (parameters['Compartment ' + str(i)]['k_in'] * concentrations[1]
-                                       - parameters['Compartment ' + str(i)]['k_out'] * concentrations[i])
+    def general_model_non_iv(concentrations, _t):
+        derivatives = [0.0] * n_compartments
+        derivatives[0] = -compartments[0]['k_out'] * concentrations[0]
+        derivatives[1] = (
+            compartments[0]['k_out'] * concentrations[0]
+            - compartments[1]['k_out'] * concentrations[1]
+            + _peripheral_exchange(compartments, concentrations)
+        )
+        for idx in range(2, n_compartments):
+            comp = compartments[idx]
+            derivatives[idx] = comp['k_in'] * concentrations[1] - comp['k_out'] * concentrations[idx]
+        return derivatives
 
-        return [dCdt_dict['dC' + str(i) + 'dt'] for i in range(len(dCdt_dict))]
-
-
-    # Update C0 for specific dose regiemn
-    if iv:
-        parameters['Compartment 0']['C0'] = 0
-        parameters['Compartment 1']['C0'] = dose / parameters['Compartment 0']['V']
-    else:
-        parameters['Compartment 0']['C0'] =  F*dose / parameters['Compartment 0']['V']
-        parameters['Compartment 1']['C0'] = 0
-        
-    
-    concentrations_initial = [param['C0'] for param in parameters.values()]
+    concentrations_initial = _initial_concentrations(compartments, dose, F, iv)
 
     # Simulation PK profile
     if iv:
@@ -168,7 +185,7 @@ def multiple_compartment_simulation(parameters, time, dose,F, iv):
         solution = odeint(general_model_non_iv, concentrations_initial, time)
     
     # Re-organized the results into dictionary.
-    results = {f'C{i}': solution[:, i] for i in range(len(parameters))}
+    results = {f'C{i}': solution[:, i] for i in range(n_compartments)}
 
     return results
 
@@ -195,17 +212,12 @@ def population_pd_simulation(parameters):
         E_df (PandasDataFrame): Effect by Concentration Profile.
         '''
     
-    Ebaseline_CV = norm.rvs(loc=0, scale=parameters['Omega Ebaseline'], size=parameters['Number of Patients'])
-    Emax_CV = norm.rvs(loc=0, scale=parameters['Omega Emax'], size=parameters['Number of Patients'])
-    EC50_CV = norm.rvs(loc=0, scale=parameters['Omega EC50'], size=parameters['Number of Patients'])
-    hill_CV = norm.rvs(loc=0, scale=parameters['Omega Hill'], size=parameters['Number of Patients'])
-    resid_CV = norm.rvs(loc=0, scale=parameters['Sigma Residual'], size=parameters['Number of Patients'])
-    
-    Ebaseline_var = (parameters['Population Ebaseline'] * np.exp(Ebaseline_CV)).reshape(parameters['Number of Patients'], 1)
-    Emax_var = (parameters['Population Emax'] * np.exp(Emax_CV)).reshape(parameters['Number of Patients'], 1)
-    EC50_var = (parameters['Population EC50'] * np.exp(EC50_CV)).reshape(parameters['Number of Patients'], 1)
-    hill_var = (parameters['Population Hill'] * np.exp(hill_CV)).reshape(parameters['Number of Patients'], 1)
-    resid_var = np.array(resid_CV).reshape(parameters['Number of Patients'], 1)
+    n_patients = parameters['Number of Patients']
+    Ebaseline_var = _sample_lognormal(parameters['Population Ebaseline'], parameters['Omega Ebaseline'], n_patients)
+    Emax_var = _sample_lognormal(parameters['Population Emax'], parameters['Omega Emax'], n_patients)
+    EC50_var = _sample_lognormal(parameters['Population EC50'], parameters['Omega EC50'], n_patients)
+    hill_var = _sample_lognormal(parameters['Population Hill'], parameters['Omega Hill'], n_patients)
+    resid_var = _sample_normal(parameters['Sigma Residual'], n_patients)
     
     sampling_conc = np.linspace(0, parameters['Sampling Conc'], 1000)
     conc_list = np.array(sampling_conc).reshape(1, len(sampling_conc))
@@ -213,7 +225,7 @@ def population_pd_simulation(parameters):
     E_df = pd.DataFrame(E_array, columns=np.round(sampling_conc,1))
     
     fig = go.Figure()
-    for i in range(parameters['Number of Patients']):
+    for i in range(n_patients):
         pd_data = E_df.iloc[i, :]
         fig.add_trace(go.Scatter(x=sampling_conc, y=pd_data, mode='lines', showlegend=False))
     if parameters['E Limit'] is not None:
@@ -295,4 +307,3 @@ def pk_non_iv_dose(dose, F, time, ke, ka, Vd):
     
     concentration = ((dose * F*ka)/(Vd*(ka-ke)))*(np.exp(-ke*time)-np.exp(-ka*time))
     return concentration
-

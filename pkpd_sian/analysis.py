@@ -1,5 +1,5 @@
 import streamlit as st
-import pandas as pd 
+import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
@@ -8,6 +8,15 @@ from sklearn.metrics import r2_score, root_mean_squared_error
 from scipy.optimize import curve_fit
 from scipy.integrate import quad
 
+
+MIN_TIME_POINTS = 3
+EPSILON = 0.00001
+
+
+def _iter_profiles(df):
+    """Yield (ID, profile_df) pairs with NaNs removed, preserving original order."""
+    for subject_id, subset in df.groupby('ID', sort=False):
+        yield subject_id, subset.dropna()
 
 
 def non_compartmental_analysis(df):
@@ -49,11 +58,10 @@ def non_compartmental_analysis(df):
     unqualified_id = []
     
     # Extract each id data to handle
-    for id in df['ID'].unique():
-        df_id = df[df['ID'] == id].dropna()
+    for id, df_id in _iter_profiles(df):
         
         # Skip if is has less than 3 points 
-        if df_id.shape[0] < 3:
+        if df_id.shape[0] < MIN_TIME_POINTS:
             unqualified_id.append(id)
             continue  
         
@@ -65,13 +73,13 @@ def non_compartmental_analysis(df):
         slope_list = []
         
         # Try different number of lamdapoints
-        for n_points in range(3, df_id.shape[0] + 1):
+        for n_points in range(MIN_TIME_POINTS, df_id.shape[0] + 1):
             # Extract df
             df_id_point = df_id.iloc[-n_points:, :] 
             
             # Run regression
             X_points = df_id_point[['Time']]
-            Y_points = np.log(df_id_point['Conc'] + 0.00001).values.reshape(-1, 1)
+            Y_points = np.log(df_id_point['Conc'] + EPSILON).values.reshape(-1, 1)
             
             
             model = LinearRegression()
@@ -103,7 +111,7 @@ def non_compartmental_analysis(df):
         data['ID'].append(id)
         data['Dose'].append(dose)
         data['Slope'].append(-slope)
-        data['Number of Lambda Points'].append(r2_max_index + 3)
+        data['Number of Lambda Points'].append(r2_max_index + MIN_TIME_POINTS)
         data['R2 Values'].append(r2_list[r2_max_index])
         data['AUC_0-last'].append(auc_0_last)
         data['AUC_last-inf'].append(auc_last_inf)
@@ -190,33 +198,37 @@ def one_compartmental_iv_analysis(df):
     unqualified_id = []
 
     # Extract each id data to handle
-    for id in df['ID'].unique():
-        df_id = df[df['ID']==id].dropna()
+    for id, df_id in _iter_profiles(df):
 
         # Skip if id has less than 3 datapoints   
-        if df_id.shape[0] < 3:
+        if df_id.shape[0] < MIN_TIME_POINTS:
             unqualified_id.append(id)
             continue 
         
         # Linear Regression 
         else:
-            Y = np.log(df_id['Conc']+0.00001).values.reshape(-1, 1)
+            Y = np.log(df_id['Conc'] + EPSILON).values.reshape(-1, 1)
             X = df_id['Time'].values.reshape(-1, 1)
             model = LinearRegression()
             model.fit(X,Y)
             prediction = model.predict(X)
+            exp_prediction = np.exp(prediction)
+            exp_Y = np.exp(Y)
+            slope = -model.coef_.item()
+            c0 = np.exp(model.intercept_.item())
+            dose = df_id['Dose'].unique()[0]
 
             # Store the primary data
             iv_analysis_results['ID'].append(id)
-            iv_analysis_results['R2'].append(r2_score(y_true=np.exp(Y), y_pred=np.exp(prediction)))
-            iv_analysis_results['RMSE'].append(root_mean_squared_error(y_true=np.exp(Y), y_pred=np.exp(prediction)))
-            iv_analysis_results['ke'].append(-model.coef_.item())
-            iv_analysis_results['C0'].append(np.exp(model.intercept_.item()))
-            iv_analysis_results['Dose'].append(df_id['Dose'].unique()[0])
-            iv_analysis_results['Apparent Vd'].append(df_id['Dose'].unique()[0]/np.exp(model.intercept_.item()))
-            iv_analysis_results['Apparent CL'].append(-model.coef_.item()*df_id['Dose'].unique()[0]/np.exp(model.intercept_.item()))
-            iv_analysis_results['AUC_0-inf'].append(np.exp(model.intercept_.item())/-model.coef_.item())
-            iv_analysis_results['Half life'].append(np.log(2)/-model.coef_.item())
+            iv_analysis_results['R2'].append(r2_score(y_true=exp_Y, y_pred=exp_prediction))
+            iv_analysis_results['RMSE'].append(root_mean_squared_error(y_true=exp_Y, y_pred=exp_prediction))
+            iv_analysis_results['ke'].append(slope)
+            iv_analysis_results['C0'].append(c0)
+            iv_analysis_results['Dose'].append(dose)
+            iv_analysis_results['Apparent Vd'].append(dose / c0)
+            iv_analysis_results['Apparent CL'].append(slope * dose / c0)
+            iv_analysis_results['AUC_0-inf'].append(c0 / slope)
+            iv_analysis_results['Half life'].append(np.log(2) / slope)
 
                 
         
@@ -272,20 +284,20 @@ def one_compartmental_im_analysis(df, predefined_F, initial_ka, initial_ke, init
     unqualified_id = []
 
     # Extract each id data to handle
-    for id in df['ID'].unique():
-        df_id = df[df['ID']==id].dropna()
+    for id, df_id in _iter_profiles(df):
             
         # Skip if id has less than 3 datapoints
-        if df_id.shape[0] < 3:
+        if df_id.shape[0] < MIN_TIME_POINTS:
             unqualified_id.append(id)
             continue 
 
         # Non-linear regression
         else:
+            dose = df_id['Dose'].unique()[0]
+
             def model(t, ka, ke, V):
                 F = predefined_F
-                Dose = df_id['Dose'].unique()[0]
-                return (F * Dose * ka / (V * (ka - ke))) * (np.exp(-ke * t) - np.exp(-ka * t))
+                return (F * dose * ka / (V * (ka - ke))) * (np.exp(-ke * t) - np.exp(-ka * t))
 
             initial_guesses = [initial_ka, initial_ke, initial_Vd]
             Y = df_id['Conc'].values
@@ -300,15 +312,16 @@ def one_compartmental_im_analysis(df, predefined_F, initial_ka, initial_ke, init
 
             # Store the primary data
             im_analysis_results['ID'].append(id)
-            im_analysis_results['Dose'].append(df_id['Dose'].unique()[0])
+            im_analysis_results['Dose'].append(dose)
             im_analysis_results['ka'].append(ka_est)
             im_analysis_results['ke'].append(ke_est)
             im_analysis_results['Vd'].append(V_est)
             im_analysis_results['RMSE'].append(RMSE)
-            im_analysis_results['Tmax'].append(np.log(ke_est/ka_est)/(ke_est-ka_est))
-            im_analysis_results['Cmax'].append(model(t =np.log(ke_est/ka_est)/(ke_est-ka_est),ka=ka_est,ke=ke_est,V=V_est))
+            tmax = np.log(ke_est/ka_est)/(ke_est-ka_est)
+            im_analysis_results['Tmax'].append(tmax)
+            im_analysis_results['Cmax'].append(model(t=tmax, ka=ka_est, ke=ke_est, V=V_est))
             im_analysis_results['AUC_0-inf'].append(integral)
-            im_analysis_results['Clearance'].append(df_id['Dose'].unique()[0]/integral) 
+            im_analysis_results['Clearance'].append(dose/integral) 
             if ka_est > ke_est:
                 im_analysis_results['Half life'].append(np.log(2)/ke_est)
             elif ka_est < ke_est:
