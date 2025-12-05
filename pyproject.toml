@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pkpd-sian-tools"
+version = "2.0.1"
+description = "Streamlit-based pharmacokinetic/pharmacodynamic simulation and analysis toolkit."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Proprietary"}
+authors = [{name = "Dinh Long Huynh"}]
+dependencies = [
+    "numpy==2.1.2",
+    "pandas==2.2.3",
+    "plotly==5.24.1",
+    "scipy==1.14.1",
+    "thefuzz==0.22.1",
+    "scikit-learn==1.5.2",
+    "statsmodels==0.14.3",
+    "streamlit==1.39.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "bandit==1.7.9",
+    "black==24.10.0",
+    "flake8==7.1.1",
+    "isort==5.13.2",
+    "pytest==8.3.3",
+    "pytest-cov==5.1.0"
+]
+
+[tool.setuptools.packages.find]
+exclude = ["tests*", "docs*"]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+skip-string-normalization = true
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.flake8]
+max-line-length = 100
+extend-ignore = ["E203", "W503"]
+exclude = ["__pycache__", ".venv"]
+
+[tool.pytest.ini_options]
+addopts = "-ra -q"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["pkpd_sian"]
+
+[tool.coverage.report]
+show_missing = true
